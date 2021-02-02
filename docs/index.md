@@ -12,7 +12,10 @@ zeeSQL allow the creation of secondary indexes on Redis hashes. It makes possibl
 
 ## Getting Started
 
-The module can be downloaded here free of charge.
+The Redis module can be downloaded here free of charge.
+
+It is possible to use the module for small instance absolutely free of charge, however, if you need more databases or secondary indexes, it is necessary a valid license key.
+More information about the license key and how we charge for it is [available here.][pricing]
 
 You can start the module with:
 
@@ -230,3 +233,4 @@ More information about the PRO version are available [here.][pro]
 [pro]: pro.md
 [pro_motivations]: pro_motivations.md
 [github_release]: https://github.com/RedBeardLab/rediSQL/releases
+[pricing]: pricing.md
