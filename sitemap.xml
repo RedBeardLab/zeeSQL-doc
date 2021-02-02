@@ -10,6 +10,16 @@
     
 
     
+        
+    <url>
+     <loc>/tutorial/</loc>
+     <lastmod>2021-02-02</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    
+
+    
     <url>
      <loc>/references/</loc>
      <lastmod>2021-02-02</lastmod>
@@ -42,12 +52,6 @@
     
 
     
-        
-    <url>
-     <loc>/blog/tutorial/</loc>
-     <lastmod>2021-02-02</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
         
     <url>
      <loc>/blog/release_0.9.0/</loc>
