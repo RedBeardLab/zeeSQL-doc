@@ -7,7 +7,7 @@ If you want to start exploring zeeSQL, this tutorial will walk you through the m
 The simplest way to follow this tutorial is to launch an instance of `zeeSQL` using docker.
 
 ```
-docker run --name zeesql --rm -d library/redis
+docker run --name zeesql --rm -d redbeardlab/zeesql
 ```
 
 The next thing you will need to follow the tutorial is the `redis-cli`.
@@ -32,23 +32,23 @@ The database can be created with a single command.
 1) 1) "OK"
 ```
 
-This command will create a new database and it will associate it with the redis key `DB`.
+This command will create a new database, and it will associate it with the Redis key `DB`.
 
 Any time we want to interact with this database, we will pass `DB` to the `zeeSQL` commands.
 
-It is possible to create more than one database, you can create as many as you like, since they are very lightweigjt.
+It is possible to create more than one database, you can create as many as you like, since they are very lightweight.
 
 ## Sending commands to the database
 
 After creating a database, we want to interact with it. It is possible to interact with the database sending it commands.
 
 ```
-127.0.0.1:6379> REDISQL.V2.EXEC DB COMMAND 'select 1;' NO_HEADER
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND 'select 1;' NO_HEADER
 1) 1) "RESULT"
 2) 1) (integer) 1
 ```
 
-We have successfully send our first command to `zeeSQL` and get our first `RESULT`, the integer 1.
+We have successfully sent our first command to `zeeSQL` and get our first `RESULT`, the integer 1.
 
 ## Modify the database structure
 
@@ -59,30 +59,30 @@ In the table we want to store the username, its score and the user email.
 The username and the email will be text fields, while the score will be an integer field.
 
 ```
-127.0.0.1:6379> REDISQL.V2.EXEC DB COMMAND 'CREATE TABLE users(username TEXT, score INT, email TEXT);'
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND 'CREATE TABLE users(username TEXT, score INT, email TEXT);'
 1) 1) "DONE"
 2) 1) (integer) 0
 ```
 
 The operation was successfully and 0 rows have been modified.
 
-However, we now have a table were we can store information about the user.
+However, we now have a table where we can store information about the user.
 
 ## Add data to the database
 
-We can now starting to add users to our table.
+We can now start to add users to our table.
 
 ```
-127.0.0.1:6379> REDISQL.V2.EXEC DB COMMAND 'INSERT INTO users VALUES("jsmith", 3, "jon.smith@gmail.com");'
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND 'INSERT INTO users VALUES("jsmith", 3, "jon.smith@gmail.com");'
 1) 1) "DONE"
 2) 1) (integer) 1
-127.0.0.1:6379> REDISQL.V2.EXEC DB COMMAND 'INSERT INTO users VALUES("EvelineInArgentina", 3, "eve.frank@yahoo.com");'
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND 'INSERT INTO users VALUES("EvelineInArgentina", 3, "eve.frank@yahoo.com");'
 1) 1) "DONE"
 2) 1) (integer) 1
-127.0.0.1:6379> REDISQL.V2.EXEC DB COMMAND 'INSERT INTO users VALUES("DuffyAlone", 12, "mr.duffy@proton.com");'
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND 'INSERT INTO users VALUES("DuffyAlone", 12, "mr.duffy@proton.com");'
 1) 1) "DONE"
 2) 1) (integer) 1
-127.0.0.1:6379> REDISQL.V2.EXEC DB COMMAND 'INSERT INTO users VALUES("far", 6, "farrington@nv.ru");'
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND 'INSERT INTO users VALUES("far", 6, "farrington@nv.ru");'
 1) 1) "DONE"
 2) 1) (integer) 1
 ```
@@ -96,20 +96,20 @@ After having added data to the database, we want to query those data back.
 We can ask for the score of the user `jsmith`
 
 ```
-127.0.0.1:6379> REDISQL.V2.EXEC DB COMMAND 'SELECT score FROM users WHERE username = "jsmith"'
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND 'SELECT score FROM users WHERE username = "jsmith"'
 1) 1) "RESULT"
 2) 1) "score"
 3) 1) "INT"
 4) 1) (integer) 3
 ```
 
-In this case the score is an integer and it is of value 3.
+In this case the score is an integer, and it is of value 3.
 
 
 Or to know what users have a score greater than 5
 
 ```
-127.0.0.1:6379> REDISQL.V2.EXEC DB COMMAND 'SELECT username FROM users WHERE score > 5'
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND 'SELECT username FROM users WHERE score > 5'
 1) 1) "RESULT"
 2) 1) "username"
 3) 1) "TEXT"
@@ -122,7 +122,7 @@ In this other case the usernames are of type TEXT and are: `DuffyAlone` and `far
 Since we are not modifying the database, instead of EXECUTING a command with `EXEC` we can just QUERY.
 
 ```
-127.0.0.1:6379> REDISQL.V2.QUERY DB COMMAND 'SELECT username FROM users WHERE score > 5'
+127.0.0.1:6379> ZEESQL.QUERY DB COMMAND 'SELECT username FROM users WHERE score > 5'
 1) 1) "RESULT"
 2) 1) "username"
 3) 1) "TEXT"
@@ -133,7 +133,7 @@ Since we are not modifying the database, instead of EXECUTING a command with `EX
 `QUERY` does not work when trying to modify the database.
 
 ```
-127.0.0.1:6379> REDISQL.V2.QUERY DB COMMAND 'INSERT INTO users VALUES("far", 6, "farrington@nv.ru");'
+127.0.0.1:6379> ZEESQL.QUERY DB COMMAND 'INSERT INTO users VALUES("far", 6, "farrington@nv.ru");'
 (error) Statement is not read only but it may modify the database, use `EXEC_STATEMENT` instead.
 ```
 
@@ -142,197 +142,250 @@ Since we are not modifying the database, instead of EXECUTING a command with `EX
 Our users, keep using our platform, are increasing their score. We can increase the score with an update.
 
 ```
-127.0.0.1:6379> REDISQL.V2.EXEC DB COMMAND 'UPDATE users SET score = score + 1 WHERE username = "jsmith";'
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND 'UPDATE users SET score = score + 1 WHERE username = "jsmith";'
 1) 1) "DONE"
 2) 1) (integer) 1
-127.0.0.1:6379> REDISQL.V2.QUERY DB COMMAND 'SELECT score FROM users WHERE username = "jsmith"'
+127.0.0.1:6379> ZEESQL.QUERY DB COMMAND 'SELECT score FROM users WHERE username = "jsmith"'
 1) 1) "RESULT"
 2) 1) "score"
 3) 1) "INT"
 4) 1) (integer) 4
 ```
 
-In this example, we first increase the score of the user `jsmith` of one and then we query the same score.
+In this example, we first increase the score of the user `jsmith` of one, and then we query the same score.
 
 ## Delete the data
 
 Eventually our user will leave the platform, in this case we can delete them.
 
 ```
-127.0.0.1:6379> REDISQL.V2.EXEC DB COMMAND 'DELETE FROM users WHERE username = "far";'
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND 'DELETE FROM users WHERE username = "far";'
 1) 1) "DONE"
 2) 1) (integer) 1
 ```
 
-# DONE
+## Use arguments for your queries
 
+Up to now, we send only SQL queries that contains all the parameters. 
+It is also possible to send a query with placeholders followed by arguments.
+This is useful to avoid SQL injections attacks and to avoid string constructions at runtime.
 
-```
-redis-cli -h demo.redisql.com
-```
-
-If you connect to the demo machine, please remember that it is a shared machine and other users can be using it at the same time. Also note that we clean up the machine every hour.
-
-<iframe width="560" height="315" src="https://www.youtube.com/embed/YRusC-AIq_g" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><Paste>
-
-## Create your database
-
-The first fundamental concept in zeeSQL is the concept of database.
-
-One database is a SQLite database that is associated with a Redis key, creating a new database also means to spawn a new thread that will be the one that actually does the work leaving the main Redis thread available to answer standard Redis queries.
-
-To create a new zeeSQL database just run:
+In our example we can increment the score of a player by a specific amount.
 
 ```
-REDISQL.CREATE_DB TUTORIAL
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND 'UPDATE users SET score = score + ?2 WHERE username = ?1;' ARGS jsmith 3
+1) 1) "DONE"
+2) 1) (integer) 1
+127.0.0.1:6379> ZEESQL.QUERY DB COMMAND 'SELECT score FROM users WHERE username = ?1' ARGS jsmith
+1) 1) "RESULT"
+2) 1) "score"
+3) 1) "INT"
+4) 1) (integer) 7
+```
 
+The first argument is `?1` (not `?0`) and the second argument is `?2`.
+
+# Using secondary indexes (or search by values) in Redis
+
+Now that we have understood how to deal with standard zeeSQL databases and how to query them, we can move forward.
+
+Now we will introduce zeeSQL secondary indexes, or how to search and project Redis `hash` data.
+
+In Redis, it is common to store values as hash.
+Each hash is univocally identify by a key, and it has one of more field. 
+Each field has a value associated with.
+
+Redis already provide fast access to elements by their key.
+But it is not possible to search keys from their values.
+
+With zeeSQL we can solve this problem, but automatically push the hashes keys and values to a specific table.
+
+We will work with a simple telemetric system.
+We have different sensors, each sensor send a timestamp, a temperature value and a humidity value.
+
+## Saving the data into Redis
+
+As first step let's see how we model the data in raw Redis, using Redis Hashes.
+
+```
+127.0.0.1:6379> HMSET sensor:001:1612733809 timestamp 1612733809 sensor 1 temperature 23 humidity 56
+OK
+127.0.0.1:6379> HMSET sensor:001:1612633809 timestamp 1612633809 sensor 1 temperature 18 humidity 21
+OK
+127.0.0.1:6379> HMSET sensor:001:1612633819 timestamp 1612633819 sensor 1 temperature 20 humidity 23
+OK
+127.0.0.1:6379> HMSET sensor:002:1612733809 timestamp 1612733809 sensor 2 temperature 32 humidity 11
+OK
+127.0.0.1:6379> HMSET sensor:002:1612633809 timestamp 1612633809 sensor 2 temperature 21 humidity 16
+OK
+127.0.0.1:6379> HMSET sensor:002:1612633819 timestamp 1612633819 sensor 2 temperature 23 humidity 12
 OK
 ```
 
-This will create a new in-memory database associated with the name `TUTORIAL`.
+The key is in the form `sensor:$sendor_id:$timestamp` and the other fields contains the telemetries' data.
 
-(If you receive an error at this stage, most likely someone else is following the tutorial, no worries, instead of `TUTORIAL` simply use another name).
 
-## First interaction
+## Creating an index
 
-Now that we have create a new database, we can interact with it.
-
-The simplest command to use is the `REDISQL.EXEC` command that will execute one query against our newly created database, try:
+We now want to store the information in the sensor in an SQL table, for easier access.
 
 ```
-REDISQL.EXEC TUTORIAL "SELECT 1;"
-
-1) 1) (integer) 1
-```
-
-This command should simply return 1.
-
-What we can do, is to create a simple SQL table.
-
-```
-REDISQL.EXEC TUTORIAL "CREATE TABLE first_table(a integer, b string);"
-
-1) DONE
-2) (integer) 0
-```
-
-Congrats, you have just created a new table.
-
-## Insert values
-
-After we create our first table, we can insert some value into it.
-
-```
-REDISQL.EXEC TUTORIAL "INSERT INTO first_table VALUES(1, 'the first row'), (2, 'the second row');"
-
-1) DONE
-2) (integer) 2
-```
-
-This command will return 2, the number of rows inserted.
-
-## Query values
-
-Now we can try to select some values from our table, as an example:
-
-```
-REDISQL.EXEC TUTORIAL "SELECT * FROM first_table;"
-
-1) 1) (integer) 1
-   2) "the first row"
-2) 1) (integer) 2
-   2) "the second row"
-```
-
-Another way to select values is to use the `QUERY` command, this command works only if the query you send is a read-only query.
-
-```
-REDISQL.QUERY TUTORIAL "SELECT * FROM first_table WHERE a = 1;"
-
-1) 1) (integer) 1
-   2) "the first row"
-```
-
-## Statements
-
-Writing this commands all over again get tedious, moreover, it is inefficient since the SQL engine needs to parse and compile the SQL query every time. The solution, in this case, is the use of statements.
-
-```
-REDISQL.CREATE_STATEMENT TUTORIAL filter_on_a "SELECT * FROM first_table WHERE a = ?1;"
-
-
+127.0.0.1:6379> ZEESQL.INDEX DB NEW TABLE sensors PREFIX sensor:* SCHEMA timestamp INT sensor INT temperature INT humidity INT
 OK
 ```
 
-The statements can both query (as above) or insert rows:
+The command creates a new secondary index associate with the table `sensors`.
+The index will be concerned only for the hashes which key start with the prefix `sensor:` (`*` being a catch-all).
+The schema used by the index will have 4 rows, each of them will be an INTEGER, and the name of those columns are respectively `timestamp`. `sensor`, `temperature` and `humidity`.
+
+The creation of an index, imply the creation of the table in the database.
+If the table already exists, it is assumed to contain the correct columns.
+
+## Reading data from the index
+
+As soon as the index is created, the Redis keys space is scanned and the hashes are added to the table.
+Which means that we can immediately query the table.
 
 ```
-REDISQL.CREATE_STATEMENT TUTORIAL new_row "INSERT INTO first_table VALUES(?1, 'insert_from_statement');"
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND 'select * from sensors;'
+1) 1) "RESULT"
+2) 1) "key"
+   2) "timestamp"
+   3) "sensor"
+   4) "temperature"
+   5) "humidity"
+3) 1) "TEXT"
+   2) "INT"
+   3) "INT"
+   4) "INT"
+   5) "INT"
+4) 1) "sensor:001:1612633809"
+   2) (integer) 1612633809
+   3) (integer) 1
+   4) (integer) 18
+   5) (integer) 21
+5) 1) "sensor:002:1612733809"
+   2) (integer) 1612733809
+   3) (integer) 2
+   4) (integer) 32
+   5) (integer) 11
+6) 1) "sensor:001:1612733809"
+   2) (integer) 1612733809
+   3) (integer) 1
+   4) (integer) 23
+   5) (integer) 56
+7) 1) "sensor:002:1612633819"
+   2) (integer) 1612633819
+   3) (integer) 2
+   4) (integer) 23
+   5) (integer) 12
+8) 1) "sensor:002:1612633809"
+   2) (integer) 1612633809
+   3) (integer) 2
+   4) (integer) 21
+   5) (integer) 16
+9) 1) "sensor:001:1612633819"
+   2) (integer) 1612633819
+   3) (integer) 1
+   4) (integer) 20
+   5) (integer) 23
+```
 
+## Modify the table of the index
+
+It is possible to add, remove and update values to the index table manually.
+Do not do that,  the data between Redis and zeeSQL will go out of sync.
+
+## Adding hashes
+
+The index continuously listens to the HASH commands of Redis and keeps the table in sync.
+
+```
+127.0.0.1:6379> HMSET sensor:003:1612633819 timestamp 1612633819 sensor 3 temperature 50 humidity 8
 OK
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND 'select * from sensors where sensor = 3;'
+1) 1) "RESULT"
+2) 1) "key"
+   2) "timestamp"
+   3) "sensor"
+   4) "temperature"
+   5) "humidity"
+3) 1) "TEXT"
+   2) "INT"
+   3) "INT"
+   4) "INT"
+   5) "INT"
+4) 1) "sensor:003:1612633819"
+   2) (integer) 1612633819
+   3) (integer) 3
+   4) (integer) 50
+   5) (integer) 8
 ```
 
-Statements can be invoked using:
+In this example we added the sensor with ID 3, after the secondary index was already in place.
+
+## Removing hashes
+
+Similarly, if a hash is deleted, the correct row is deleted from the table.
 
 ```
-REDISQL.EXEC_STATEMENT TUTORIAL new_row 5
-
-1) DONE
-2) (integer) 1
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND 'select key from sensors where sensor = 2;'
+1) 1) "RESULT"
+2) 1) "key"
+3) 1) "TEXT"
+4) 1) "sensor:002:1612733809"
+5) 1) "sensor:002:1612633819"
+6) 1) "sensor:002:1612633809"
+127.0.0.1:6379> DEL sensor:002:1612633809
+(integer) 1
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND 'select key from sensors where sensor = 2;'
+1) 1) "RESULT"
+2) 1) "key"
+3) 1) "TEXT"
+4) 1) "sensor:002:1612733809"
+5) 1) "sensor:002:1612633819"
 ```
 
-Or if they are read-only statements:
+As you can see we delete a hash, and the correct row was deleted also from the table.
+
+## Updating hashes
+
+As with deletion, updating a hash is also reflected on the index table.
 
 ```
-REDISQL.QUERY_STATEMENT TUTORIAL filter_on_a 5
-
-1) 1) (integer) 5
-   2) "insert_from_statement"
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND 'select key, temperature from sensors where sensor = 3;'
+1) 1) "RESULT"
+2) 1) "key"
+   2) "temperature"
+3) 1) "TEXT"
+   2) "INT"
+4) 1) "sensor:003:1612633819"
+   2) (integer) 50
+127.0.0.1:6379> HINCRBY sensor:003:1612633819 temperature 33
+(integer) 83
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND 'select key, temperature from sensors where sensor = 3;'
+1) 1) "RESULT"
+2) 1) "key"
+   2) "temperature"
+3) 1) "TEXT"
+   2) "INT"
+4) 1) "sensor:003:1612633819"
+   2) (integer) 83
 ```
 
-## Push to streams
+In this case we update a hash, and also the table was updated.
 
-Sometimes you may want to store the result of your queries in Redis itself, to consume it little by little, or for caching. In such cases, the solution is to push the results into a Redis stream.
+## Querying the secondary index table
 
-```
-REDISQL.QUERY.INTO tutorial_stream TUTORIAL "SELECT * FROM first_table;"
+The secondary index table, it is just a plain SQL table.
+zeeSQL does not add any index on the table.
+User is free to add the SQL indexes it desired to the secondary index table.
 
-1) 1) "tutorial_stream"
-   2) "1569174107783-0"
-   3) "1569174107783-2"
-   4) (integer) 3
-```
-
-This will push the result of the query into the stream `tutorial_stream` and it will return:
-1. The name of the stream
-2. The first ID
-3. The last ID
-4. The total number of elements added
-
-In order to retrieve the values from the Redis stream, you can use the standard Redis API:
-
-```
-XRANGE tutorial_stream - +
-
-1) 1) "1569174107783-0"
-   2) 1) "int:a"
-      2) "1"
-      3) "text:b"
-      4) "the first row"
-2) 1) "1569174107783-1"
-   2) 1) "int:a"
-      2) "2"
-      3) "text:b"
-      4) "the second row"
-3) 1) "1569174107783-2"
-   2) 1) "int:a"
-      2) "5"
-      3) "text:b"
-      4) "insert_from_statement"
-```
+Without any index, each query will go through a full table scan.
 
 # End
 
 I hope that this tutorial was helpful :)
 
-If you have any question, feel free to contact me simone@redbeardlab.com or on github: [RedBeardLab/rediSQL](https://github.com/RedBeardLab/rediSQL)
+If you have any question, feel free to contact me simone@redbeardlab.com or on github: [RedBeardLab/zeeSQL-doc](https://github.com/RedBeardLab/zeeSQL-doc)
+
