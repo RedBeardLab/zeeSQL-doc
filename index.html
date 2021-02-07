@@ -66,70 +66,6 @@
 </li>
                         </ul>
                     </li>
-                    <li >
-                        <a href="references/">References</a>
-                    </li>
-                    <li >
-                        <a href="pro/">Pro</a>
-                    </li>
-                    <li >
-                        <a href="motivations/">Motivations</a>
-                    </li>
-                    <li >
-                        <a href="pricing/">Pricing</a>
-                    </li>
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Blog <b class="caret"></b></a>
-                        <ul class="dropdown-menu">
-                            
-<li >
-    <a href="blog/release_0.9.0/">Release 0.9.0</a>
-</li>
-                            
-<li >
-    <a href="blog/release_0.8.0/">Release 0.8.0</a>
-</li>
-                            
-<li >
-    <a href="blog/release_0.7.0/">Release 0.7.0</a>
-</li>
-                            
-<li >
-    <a href="blog/release_0.6.0/">Release 0.6.0</a>
-</li>
-                            
-<li >
-    <a href="blog/release_0.5.0/">Release 0.5.0</a>
-</li>
-                            
-<li >
-    <a href="blog/analytics/">Analytics</a>
-</li>
-                            
-<li >
-    <a href="blog/JaaS/">JSON on Redis using RediSQL, SQL steroids for Redis</a>
-</li>
-                            
-<li >
-    <a href="blog/performances/">Double performances of RediSQL going zero copy</a>
-</li>
-                            
-<li >
-    <a href="blog/python/using-redisql-with-python/">Using RediSQL with Python</a>
-</li>
-                            
-<li >
-    <a href="blog/golang/using-redisql-with-golang/">Using RediSQL with Go(lang)</a>
-</li>
-                            
-<li >
-    <a href="blog/node/using-redisql-with-node/">Using RediSQL with Node.js</a>
-</li>
-                        </ul>
-                    </li>
-                    <li >
-                        <a href="faqs/">FAQs</a>
-                    </li>
                 </ul>
 
             <ul class="nav navbar-nav navbar-right">
@@ -161,171 +97,325 @@
         <div class="container">
                 <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="main active"><a href="#zeesql">zeeSQL</a></li>
-            <li><a href="#getting-started">Getting Started</a></li>
-        <li class="main "><a href="#overview">Overview</a></li>
-            <li><a href="#databases">Databases</a></li>
-            <li><a href="#exec">Exec</a></li>
-            <li><a href="#statements">Statements</a></li>
-            <li><a href="#query">Query</a></li>
-        <li class="main "><a href="#persistency">Persistency</a></li>
-            <li><a href="#rdb">RDB</a></li>
-            <li><a href="#aof">AOF</a></li>
-            <li><a href="#obtain">Obtain</a></li>
-            <li><a href="#motivation">Motivation</a></li>
-            <li><a href="#not-open-source">Not open source</a></li>
-        <li class="main "><a href="#pro">PRO</a></li>
+        <li class="main active"><a href="#tutorial-for-zeesql">Tutorial for zeeSQL</a></li>
+            <li><a href="#setting-up-the-environment">Setting up the environment</a></li>
+            <li><a href="#creating-a-database-in-zeesql">Creating a database in zeeSQL</a></li>
+            <li><a href="#sending-commands-to-the-database">Sending commands to the database</a></li>
+            <li><a href="#modify-the-database-structure">Modify the database structure</a></li>
+            <li><a href="#add-data-to-the-database">Add data to the database</a></li>
+            <li><a href="#query-the-database">Query the database</a></li>
+            <li><a href="#modify-the-data">Modify the data</a></li>
+            <li><a href="#delete-the-data">Delete the data</a></li>
+            <li><a href="#use-arguments-for-your-queries">Use arguments for your queries</a></li>
+        <li class="main "><a href="#using-secondary-indexes-or-search-by-values-in-redis">Using secondary indexes (or search by values) in Redis</a></li>
+            <li><a href="#saving-the-data-into-redis">Saving the data into Redis</a></li>
+            <li><a href="#creating-an-index">Creating an index</a></li>
+            <li><a href="#reading-data-from-the-index">Reading data from the index</a></li>
+            <li><a href="#modify-the-table-of-the-index">Modify the table of the index</a></li>
+            <li><a href="#adding-hashes">Adding hashes</a></li>
+            <li><a href="#removing-hashes">Removing hashes</a></li>
+            <li><a href="#updating-hashes">Updating hashes</a></li>
+            <li><a href="#querying-the-secondary-index-table">Querying the secondary index table</a></li>
+        <li class="main "><a href="#end">End</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
 
-<h1 id="zeesql">zeeSQL</h1>
-<p><a href="https://github.com/RedBeardLab/rediSQL">zeeSQL</a> is a Redis module that embeds a fully functional SQLite database, it is the successor of RediSQL, or RediSQL V2.</p>
-<p>The name was changed to avoid possible trademark infringmentes with Redis itself.</p>
-<p>At the best of our knowledge is the only system that provides SQL capabilities while being very fast so to be used as a cache, simple to integrate with any programming language, since it can be used by every redis client, and with very very low maintenance.</p>
-<p>Moreover, it can also be used as the main database, it can store data not only in memory but also on file and it can also use the same persistence mechanisms of redis itself.</p>
-<p>zeeSQL allow the creation of secondary indexes on Redis hashes. It makes possible to search hashes also for values, not only for their primary key.</p>
-<h2 id="getting-started">Getting Started</h2>
-<p>The Redis module can be downloaded here free of charge.</p>
-<p>It is possible to use the module for small instance absolutely free of charge, however, if you need more databases or secondary indexes, it is necessary a valid license key.
-More information about the license key and how we charge for it is <a href="pricing/">available here.</a></p>
-<p>You can start the module with:</p>
-<pre><code class="bash">./redis-server --loadmodule zeeSQL_&lt;version&gt;.so
+<h1 id="tutorial-for-zeesql">Tutorial for zeeSQL</h1>
+<h2 id="setting-up-the-environment">Setting up the environment</h2>
+<p>If you want to start exploring zeeSQL, this tutorial will walk you through the most important commands to know and how to use them.</p>
+<p>The simplest way to follow this tutorial is to launch an instance of <code>zeeSQL</code> using docker.</p>
+<pre><code>docker run --name zeesql --rm -d redbeardlab/zeesql
 </code></pre>
 
-<p>After starting redis with the zeeSQL module it will be just the redis you learn to love:</p>
-<pre><code class="bash">$ ~/redis-4.0-rc1/src/redis-cli 
-127.0.0.1:6379&gt; 
-127.0.0.1:6379&gt; SET A 3
-OK
-127.0.0.1:6379&gt; GET A
-&quot;3&quot;
+<p>The next thing you will need to follow the tutorial is the <code>redis-cli</code>.</p>
+<p>You can connect to the same docker container and start the <code>redis-cli</code> with:</p>
+<pre><code>docker exec -it zeesql redis-cli
 </code></pre>
 
-<p>But you will also able to use all the API described below:</p>
+<p>At this point you are inside the <code>redis-cli</code>, ready to interact with <code>Redis</code> and <code>zeeSQL</code>.</p>
+<h2 id="creating-a-database-in-zeesql">Creating a database in zeeSQL</h2>
+<p>The very first step when working with <code>zeeSQL</code> it is to create a new database.</p>
+<p>The database can be created with a single command.</p>
 <pre><code>127.0.0.1:6379&gt; ZEESQL.CREATE_DB DB
-OK
-# Start creating a table on the default DB
-127.0.0.1:6379&gt; ZEESQL.EXEC DB &quot;CREATE TABLE foo(A INT, B TEXT);&quot;
-DONE
-# Insert some data into the table
-127.0.0.1:6379&gt; ZEESQL.EXEC DB &quot;INSERT INTO foo VALUES(3, 'bar');&quot;
-OK
-# Retrieve the data you just inserted
-127.0.0.1:6379&gt; ZEESQL.EXEC DB &quot;SELECT * FROM foo;&quot;
-1) 1) (integer) 3
-   2) &quot;bar&quot;
-# Of course you can make multiple tables
-127.0.0.1:6379&gt; ZEESQL.EXEC DB &quot;CREATE TABLE baz(C INT, B TEXT);&quot;
-OK
-127.0.0.1:6379&gt; ZEESQL.EXEC DB &quot;INSERT INTO baz VALUES(3, 'aaa');&quot;
-OK
-127.0.0.1:6379&gt; ZEESQL.EXEC DB &quot;INSERT INTO baz VALUES(3, 'bbb');&quot;
-OK
-127.0.0.1:6379&gt; ZEESQL.EXEC DB &quot;INSERT INTO baz VALUES(3, 'ccc');&quot;
-OK
-# And of course you can use joins
-127.0.0.1:6379&gt; ZEESQL.EXEC DB &quot;SELECT * FROM foo, baz WHERE foo.A = baz.C;&quot;
-
-1) 1) (integer) 3
-   2) &quot;bar&quot;
-   3) (integer) 3
-   4) &quot;aaa&quot;
-2) 1) (integer) 3
-   2) &quot;bar&quot;
-   3) (integer) 3
-   4) &quot;bbb&quot;
-3) 1) (integer) 3
-   2) &quot;bar&quot;
-   3) (integer) 3
-   4) &quot;ccc&quot;
-127.0.0.1:6379&gt; 
+1) 1) &quot;OK&quot;
 </code></pre>
 
-<p>Also the <code>LIKE</code> operator is included:</p>
-<pre><code>127.0.0.1:6379&gt; ZEESQL.EXEC DB &quot;CREATE TABLE text_search(t TEXT);&quot;
-OK
-127.0.0.1:6379&gt; ZEESQL.EXEC DB &quot;INSERT INTO text_search VALUES('hello');&quot;
-OK
-127.0.0.1:6379&gt; ZEESQL.EXEC DB &quot;INSERT INTO text_search VALUES('banana');&quot;
-OK
-127.0.0.1:6379&gt; ZEESQL.EXEC DB &quot;INSERT INTO text_search VALUES('apple');&quot;
-OK
-127.0.0.1:6379&gt; 
-127.0.0.1:6379&gt; ZEESQL.EXEC DB &quot;SELECT * FROM text_search WHERE t LIKE 'h_llo';&quot;
-1) 1) &quot;hello&quot;
-127.0.0.1:6379&gt; ZEESQL.EXEC DB &quot;SELECT * FROM text_search WHERE t LIKE '%anana';&quot;
-1) 1) &quot;banana&quot;
-127.0.0.1:6379&gt; ZEESQL.EXEC DB &quot;INSERT INTO text_search VALUES('anana');&quot;
-OK
-127.0.0.1:6379&gt; ZEESQL.EXEC DB &quot;SELECT * FROM text_search;&quot;
-1) 1) &quot;hello&quot;
-2) 1) &quot;banana&quot;
-3) 1) &quot;apple&quot;
-4) 1) &quot;anana&quot;
-127.0.0.1:6379&gt; ZEESQL.EXEC DB &quot;SELECT * FROM text_search WHERE t LIKE 'a%';&quot;
-1) 1) &quot;apple&quot;
-2) 1) &quot;anana&quot;
+<p>This command will create a new database, and it will associate it with the Redis key <code>DB</code>.</p>
+<p>Any time we want to interact with this database, we will pass <code>DB</code> to the <code>zeeSQL</code> commands.</p>
+<p>It is possible to create more than one database, you can create as many as you like, since they are very lightweight.</p>
+<h2 id="sending-commands-to-the-database">Sending commands to the database</h2>
+<p>After creating a database, we want to interact with it. It is possible to interact with the database sending it commands.</p>
+<pre><code>127.0.0.1:6379&gt; ZEESQL.EXEC DB COMMAND 'select 1;' NO_HEADER
+1) 1) &quot;RESULT&quot;
+2) 1) (integer) 1
 </code></pre>
 
-<p>Now you can create tables, insert data on those tables, make queries, remove elements, everything.</p>
-<h1 id="overview">Overview</h1>
-<p>In this section, we are going to explore the main concepts in the module.</p>
-<p>There is another section of the website, <a href="references/">the reference</a>, that explore every single command that the module provides giving a deeper explanation of every detail.</p>
-<h2 id="databases">Databases</h2>
-<p>RediSQL provides the concept of database.</p>
-<p>It is possible to create a new database with the command <a href="references/#redisqlcreate_db"><code>ZEESQL.CREATE_DB</code></a>.</p>
-<p>The database is associated with a Redis key and so it is possible to have multiple SQL databases in a single Redis instance.</p>
-<p>Also, it is possible to use in-memory database, which is the default, or databases backed by a real file. In-memory databases are generally a little faster but they are limited by the amount of memory your server has. Database backed by files are a little slower but they can grow basically indefinitely.</p>
-<h2 id="exec">Exec</h2>
-<p><a href="references/#redisqlexec"><code>ZEESQL.EXEC</code></a> is the command that let you execute command against a SQL database.</p>
-<p>It is useful when you are testing the module or when you are changing the settings of the databases through SQLite <code>PRAGMA</code>s.</p>
-<p>However, I would not suggest to use them in production since there are better tools like <code>Statements</code>.</p>
-<h2 id="statements">Statements</h2>
-<p>Queries and statements can be precompiled and stores inside the Redis key in order to provide a faster execution and more agility in your application.</p>
-<p>When you execute an SQLite query, the text is compiled to a binary code, this binary code is then executed against the database and the result provide an answer.
-The phase of compilation can be quite expensive, but if you always execute the same statements (think about <code>inserts</code>), it can be avoided.</p>
-<p>When you use <a href="references/#redisqlcreate_statement"><code>ZEESQL.CREATE_STATEMENT</code></a> your statement is compiled, then when you execute it using <a href="references/#redisqlexec_statement"><code>ZEESQL.EXEC_STATEMENT</code></a> it is not re-compiled but we use the pre-compiled one. It seems a trivial change but it will really speed up some workload.</p>
-<p>Statements can also be used as an interface for different applications using the same RediSQL instance.</p>
-<p>Once you define the interface of the statement and its behaviour, then you are free to change it's implementation while maintaining all the legacy code working.
-This is quite useful especially if you have several services using the same RediSQL instance.</p>
-<h2 id="query">Query</h2>
-<p>In most databases there are statements that modify the data and queries that simply read.</p>
-<p>Of course, just reading, is usually a faster and simpler operation than modify the data. In order to take advantages of this, we provide a different command <a href="references/#redisqlquery"><code>ZEESQL.QUERY</code></a> and <a href="references/#redisqlquery_statement"><code>ZEESQL.QUERY_STATEMENT</code></a> that constraint you to don't modify the data.</p>
-<p>These commands allow you to have slaves/replicas serves query and to balance some load off the master node for better speed and reliability.</p>
-<h1 id="persistency">Persistency</h1>
-<p>The module in the community version implements only RDB. However, the PRO version provides also AOF and replication.</p>
-<h2 id="rdb">RDB</h2>
-<p>The module implements RDB persistency.</p>
-<p>When Redis starts to save the RDB file the status of the database get serialized and written, along with all the other information, in the RDB file.</p>
-<h2 id="aof">AOF</h2>
-<p>AOF replication is provided only in the PRO edition.</p>
-<p>All the commands are replicated, but the read-only ones.</p>
-<p>With AOF replication you also get instance replication that allows replicating the same dataset into different Redis instances in a master/slave fashion.</p>
-<h2 id="obtain">Obtain</h2>
-<p>There are <strong>two version</strong> of the software, a "community", completely open source version and a PRO version that comes with <strong>more features and support plan.</strong></p>
-<p>Both versions can be <a href="https://plasso.com/s/epp4GbsJdp-redisql"><strong>obtained in the store.</strong></a></p>
-<p>For the community version, you can just download it, we ask for a small donation if you can support the project but feel free to just input 0€ and download it.</p>
-<p>For the PRO version you need to <a href="https://plasso.com/s/epp4GbsJdp-redisql/signup/"><strong>sign up here</strong></a>, after you signed up you will be able to download the software.</p>
-<p>A detailed coverage of the PRO version <a href="pro/">is provided here</a></p>
-<p>Finally you can also obtain the software from <a href="https://github.com/RedBeardLab/rediSQL/releases">github releases</a></p>
-<h2 id="motivation">Motivation</h2>
-<p>The main motivation behind the project is to provide a quick and hands-off environment to store structured data.</p>
-<p>It also turns out that RediSQL is a great way to cache your content and data in a more structured way.</p>
-<p>The main history and motivation of the project are explained <a href="motivations/">in this page.</a></p>
-<h2 id="not-open-source">Not open source</h2>
-<p>RediSQL V1 was an open source project, that provided all the source code on github.</p>
-<p>Unfortunately the project was not suistanable, users were not paying.</p>
-<p>In order to provide useful code, it is necessary continuos work and improvements, without a stream of money this is impossible.</p>
-<p><code>miaoSQL</code>, provides extra features on top of the one in RediSQL, and we believe that people benefits from it, should help support the product.</p>
-<p><code>miaoSQL</code> provides a free options, powerful enough for a lot of use cases.</p>
-<h1 id="pro">PRO</h1>
-<p>The PRO edition is based on the Open Source one, however, it provides one more class of commands that are necessary for business or where rediSQL is a critical piece of the infrastructure.</p>
-<p>Every command, but <code>ZEESQL.CREATE_DB</code>, blocks the clients and it is executed in the background by a different thread.</p>
-<p>With the PRO version, we also provide the <code>.NOW</code> commands that are executed immediately without blocking the client.</p>
-<p>Every command in the PRO version provides the <code>.NOW</code> variant, but please refer to the <a href="references/">reference</a>.</p>
-<p>Moreover, the PRO version also provides AOF replication, that, indeed, necessitate of commands that don't block the clients.</p>
-<p>More information about the PRO version are available <a href="pro/">here.</a></p></div>
+<p>We have successfully sent our first command to <code>zeeSQL</code> and get our first <code>RESULT</code>, the integer 1.</p>
+<h2 id="modify-the-database-structure">Modify the database structure</h2>
+<p>A database without tables is not very useful.
+We will now create a table to store information about users.</p>
+<p>In the table we want to store the username, its score and the user email.
+The username and the email will be text fields, while the score will be an integer field.</p>
+<pre><code>127.0.0.1:6379&gt; ZEESQL.EXEC DB COMMAND 'CREATE TABLE users(username TEXT, score INT, email TEXT);'
+1) 1) &quot;DONE&quot;
+2) 1) (integer) 0
+</code></pre>
+
+<p>The operation was successfully and 0 rows have been modified.</p>
+<p>However, we now have a table where we can store information about the user.</p>
+<h2 id="add-data-to-the-database">Add data to the database</h2>
+<p>We can now start to add users to our table.</p>
+<pre><code>127.0.0.1:6379&gt; ZEESQL.EXEC DB COMMAND 'INSERT INTO users VALUES(&quot;jsmith&quot;, 3, &quot;jon.smith@gmail.com&quot;);'
+1) 1) &quot;DONE&quot;
+2) 1) (integer) 1
+127.0.0.1:6379&gt; ZEESQL.EXEC DB COMMAND 'INSERT INTO users VALUES(&quot;EvelineInArgentina&quot;, 3, &quot;eve.frank@yahoo.com&quot;);'
+1) 1) &quot;DONE&quot;
+2) 1) (integer) 1
+127.0.0.1:6379&gt; ZEESQL.EXEC DB COMMAND 'INSERT INTO users VALUES(&quot;DuffyAlone&quot;, 12, &quot;mr.duffy@proton.com&quot;);'
+1) 1) &quot;DONE&quot;
+2) 1) (integer) 1
+127.0.0.1:6379&gt; ZEESQL.EXEC DB COMMAND 'INSERT INTO users VALUES(&quot;far&quot;, 6, &quot;farrington@nv.ru&quot;);'
+1) 1) &quot;DONE&quot;
+2) 1) (integer) 1
+</code></pre>
+
+<p>Each insert was successful and each one added one more row to the database.</p>
+<h2 id="query-the-database">Query the database</h2>
+<p>After having added data to the database, we want to query those data back.</p>
+<p>We can ask for the score of the user <code>jsmith</code></p>
+<pre><code>127.0.0.1:6379&gt; ZEESQL.EXEC DB COMMAND 'SELECT score FROM users WHERE username = &quot;jsmith&quot;'
+1) 1) &quot;RESULT&quot;
+2) 1) &quot;score&quot;
+3) 1) &quot;INT&quot;
+4) 1) (integer) 3
+</code></pre>
+
+<p>In this case the score is an integer, and it is of value 3.</p>
+<p>Or to know what users have a score greater than 5</p>
+<pre><code>127.0.0.1:6379&gt; ZEESQL.EXEC DB COMMAND 'SELECT username FROM users WHERE score &gt; 5'
+1) 1) &quot;RESULT&quot;
+2) 1) &quot;username&quot;
+3) 1) &quot;TEXT&quot;
+4) 1) &quot;DuffyAlone&quot;
+5) 1) &quot;far&quot;
+</code></pre>
+
+<p>In this other case the usernames are of type TEXT and are: <code>DuffyAlone</code> and <code>far</code>.</p>
+<p>Since we are not modifying the database, instead of EXECUTING a command with <code>EXEC</code> we can just QUERY.</p>
+<pre><code>127.0.0.1:6379&gt; ZEESQL.QUERY DB COMMAND 'SELECT username FROM users WHERE score &gt; 5'
+1) 1) &quot;RESULT&quot;
+2) 1) &quot;username&quot;
+3) 1) &quot;TEXT&quot;
+4) 1) &quot;DuffyAlone&quot;
+5) 1) &quot;far&quot;
+</code></pre>
+
+<p><code>QUERY</code> does not work when trying to modify the database.</p>
+<pre><code>127.0.0.1:6379&gt; ZEESQL.QUERY DB COMMAND 'INSERT INTO users VALUES(&quot;far&quot;, 6, &quot;farrington@nv.ru&quot;);'
+(error) Statement is not read only but it may modify the database, use `EXEC_STATEMENT` instead.
+</code></pre>
+
+<h2 id="modify-the-data">Modify the data</h2>
+<p>Our users, keep using our platform, are increasing their score. We can increase the score with an update.</p>
+<pre><code>127.0.0.1:6379&gt; ZEESQL.EXEC DB COMMAND 'UPDATE users SET score = score + 1 WHERE username = &quot;jsmith&quot;;'
+1) 1) &quot;DONE&quot;
+2) 1) (integer) 1
+127.0.0.1:6379&gt; ZEESQL.QUERY DB COMMAND 'SELECT score FROM users WHERE username = &quot;jsmith&quot;'
+1) 1) &quot;RESULT&quot;
+2) 1) &quot;score&quot;
+3) 1) &quot;INT&quot;
+4) 1) (integer) 4
+</code></pre>
+
+<p>In this example, we first increase the score of the user <code>jsmith</code> of one, and then we query the same score.</p>
+<h2 id="delete-the-data">Delete the data</h2>
+<p>Eventually our user will leave the platform, in this case we can delete them.</p>
+<pre><code>127.0.0.1:6379&gt; ZEESQL.EXEC DB COMMAND 'DELETE FROM users WHERE username = &quot;far&quot;;'
+1) 1) &quot;DONE&quot;
+2) 1) (integer) 1
+</code></pre>
+
+<h2 id="use-arguments-for-your-queries">Use arguments for your queries</h2>
+<p>Up to now, we send only SQL queries that contains all the parameters. 
+It is also possible to send a query with placeholders followed by arguments.
+This is useful to avoid SQL injections attacks and to avoid string constructions at runtime.</p>
+<p>In our example we can increment the score of a player by a specific amount.</p>
+<pre><code>127.0.0.1:6379&gt; ZEESQL.EXEC DB COMMAND 'UPDATE users SET score = score + ?2 WHERE username = ?1;' ARGS jsmith 3
+1) 1) &quot;DONE&quot;
+2) 1) (integer) 1
+127.0.0.1:6379&gt; ZEESQL.QUERY DB COMMAND 'SELECT score FROM users WHERE username = ?1' ARGS jsmith
+1) 1) &quot;RESULT&quot;
+2) 1) &quot;score&quot;
+3) 1) &quot;INT&quot;
+4) 1) (integer) 7
+</code></pre>
+
+<p>The first argument is <code>?1</code> (not <code>?0</code>) and the second argument is <code>?2</code>.</p>
+<h1 id="using-secondary-indexes-or-search-by-values-in-redis">Using secondary indexes (or search by values) in Redis</h1>
+<p>Now that we have understood how to deal with standard zeeSQL databases and how to query them, we can move forward.</p>
+<p>Now we will introduce zeeSQL secondary indexes, or how to search and project Redis <code>hash</code> data.</p>
+<p>In Redis, it is common to store values as hash.
+Each hash is univocally identify by a key, and it has one of more field. 
+Each field has a value associated with.</p>
+<p>Redis already provide fast access to elements by their key.
+But it is not possible to search keys from their values.</p>
+<p>With zeeSQL we can solve this problem, but automatically push the hashes keys and values to a specific table.</p>
+<p>We will work with a simple telemetric system.
+We have different sensors, each sensor send a timestamp, a temperature value and a humidity value.</p>
+<h2 id="saving-the-data-into-redis">Saving the data into Redis</h2>
+<p>As first step let's see how we model the data in raw Redis, using Redis Hashes.</p>
+<pre><code>127.0.0.1:6379&gt; HMSET sensor:001:1612733809 timestamp 1612733809 sensor 1 temperature 23 humidity 56
+OK
+127.0.0.1:6379&gt; HMSET sensor:001:1612633809 timestamp 1612633809 sensor 1 temperature 18 humidity 21
+OK
+127.0.0.1:6379&gt; HMSET sensor:001:1612633819 timestamp 1612633819 sensor 1 temperature 20 humidity 23
+OK
+127.0.0.1:6379&gt; HMSET sensor:002:1612733809 timestamp 1612733809 sensor 2 temperature 32 humidity 11
+OK
+127.0.0.1:6379&gt; HMSET sensor:002:1612633809 timestamp 1612633809 sensor 2 temperature 21 humidity 16
+OK
+127.0.0.1:6379&gt; HMSET sensor:002:1612633819 timestamp 1612633819 sensor 2 temperature 23 humidity 12
+OK
+</code></pre>
+
+<p>The key is in the form <code>sensor:$sendor_id:$timestamp</code> and the other fields contains the telemetries' data.</p>
+<h2 id="creating-an-index">Creating an index</h2>
+<p>We now want to store the information in the sensor in an SQL table, for easier access.</p>
+<pre><code>127.0.0.1:6379&gt; ZEESQL.INDEX DB NEW TABLE sensors PREFIX sensor:* SCHEMA timestamp INT sensor INT temperature INT humidity INT
+OK
+</code></pre>
+
+<p>The command creates a new secondary index associate with the table <code>sensors</code>.
+The index will be concerned only for the hashes which key start with the prefix <code>sensor:</code> (<code>*</code> being a catch-all).
+The schema used by the index will have 4 rows, each of them will be an INTEGER, and the name of those columns are respectively <code>timestamp</code>. <code>sensor</code>, <code>temperature</code> and <code>humidity</code>.</p>
+<p>The creation of an index, imply the creation of the table in the database.
+If the table already exists, it is assumed to contain the correct columns.</p>
+<h2 id="reading-data-from-the-index">Reading data from the index</h2>
+<p>As soon as the index is created, the Redis keys space is scanned and the hashes are added to the table.
+Which means that we can immediately query the table.</p>
+<pre><code>127.0.0.1:6379&gt; ZEESQL.EXEC DB COMMAND 'select * from sensors;'
+1) 1) &quot;RESULT&quot;
+2) 1) &quot;key&quot;
+   2) &quot;timestamp&quot;
+   3) &quot;sensor&quot;
+   4) &quot;temperature&quot;
+   5) &quot;humidity&quot;
+3) 1) &quot;TEXT&quot;
+   2) &quot;INT&quot;
+   3) &quot;INT&quot;
+   4) &quot;INT&quot;
+   5) &quot;INT&quot;
+4) 1) &quot;sensor:001:1612633809&quot;
+   2) (integer) 1612633809
+   3) (integer) 1
+   4) (integer) 18
+   5) (integer) 21
+5) 1) &quot;sensor:002:1612733809&quot;
+   2) (integer) 1612733809
+   3) (integer) 2
+   4) (integer) 32
+   5) (integer) 11
+6) 1) &quot;sensor:001:1612733809&quot;
+   2) (integer) 1612733809
+   3) (integer) 1
+   4) (integer) 23
+   5) (integer) 56
+7) 1) &quot;sensor:002:1612633819&quot;
+   2) (integer) 1612633819
+   3) (integer) 2
+   4) (integer) 23
+   5) (integer) 12
+8) 1) &quot;sensor:002:1612633809&quot;
+   2) (integer) 1612633809
+   3) (integer) 2
+   4) (integer) 21
+   5) (integer) 16
+9) 1) &quot;sensor:001:1612633819&quot;
+   2) (integer) 1612633819
+   3) (integer) 1
+   4) (integer) 20
+   5) (integer) 23
+</code></pre>
+
+<h2 id="modify-the-table-of-the-index">Modify the table of the index</h2>
+<p>It is possible to add, remove and update values to the index table manually.
+Do not do that,  the data between Redis and zeeSQL will go out of sync.</p>
+<h2 id="adding-hashes">Adding hashes</h2>
+<p>The index continuously listens to the HASH commands of Redis and keeps the table in sync.</p>
+<pre><code>127.0.0.1:6379&gt; HMSET sensor:003:1612633819 timestamp 1612633819 sensor 3 temperature 50 humidity 8
+OK
+127.0.0.1:6379&gt; ZEESQL.EXEC DB COMMAND 'select * from sensors where sensor = 3;'
+1) 1) &quot;RESULT&quot;
+2) 1) &quot;key&quot;
+   2) &quot;timestamp&quot;
+   3) &quot;sensor&quot;
+   4) &quot;temperature&quot;
+   5) &quot;humidity&quot;
+3) 1) &quot;TEXT&quot;
+   2) &quot;INT&quot;
+   3) &quot;INT&quot;
+   4) &quot;INT&quot;
+   5) &quot;INT&quot;
+4) 1) &quot;sensor:003:1612633819&quot;
+   2) (integer) 1612633819
+   3) (integer) 3
+   4) (integer) 50
+   5) (integer) 8
+</code></pre>
+
+<p>In this example we added the sensor with ID 3, after the secondary index was already in place.</p>
+<h2 id="removing-hashes">Removing hashes</h2>
+<p>Similarly, if a hash is deleted, the correct row is deleted from the table.</p>
+<pre><code>127.0.0.1:6379&gt; ZEESQL.EXEC DB COMMAND 'select key from sensors where sensor = 2;'
+1) 1) &quot;RESULT&quot;
+2) 1) &quot;key&quot;
+3) 1) &quot;TEXT&quot;
+4) 1) &quot;sensor:002:1612733809&quot;
+5) 1) &quot;sensor:002:1612633819&quot;
+6) 1) &quot;sensor:002:1612633809&quot;
+127.0.0.1:6379&gt; DEL sensor:002:1612633809
+(integer) 1
+127.0.0.1:6379&gt; ZEESQL.EXEC DB COMMAND 'select key from sensors where sensor = 2;'
+1) 1) &quot;RESULT&quot;
+2) 1) &quot;key&quot;
+3) 1) &quot;TEXT&quot;
+4) 1) &quot;sensor:002:1612733809&quot;
+5) 1) &quot;sensor:002:1612633819&quot;
+</code></pre>
+
+<p>As you can see we delete a hash, and the correct row was deleted also from the table.</p>
+<h2 id="updating-hashes">Updating hashes</h2>
+<p>As with deletion, updating a hash is also reflected on the index table.</p>
+<pre><code>127.0.0.1:6379&gt; ZEESQL.EXEC DB COMMAND 'select key, temperature from sensors where sensor = 3;'
+1) 1) &quot;RESULT&quot;
+2) 1) &quot;key&quot;
+   2) &quot;temperature&quot;
+3) 1) &quot;TEXT&quot;
+   2) &quot;INT&quot;
+4) 1) &quot;sensor:003:1612633819&quot;
+   2) (integer) 50
+127.0.0.1:6379&gt; HINCRBY sensor:003:1612633819 temperature 33
+(integer) 83
+127.0.0.1:6379&gt; ZEESQL.EXEC DB COMMAND 'select key, temperature from sensors where sensor = 3;'
+1) 1) &quot;RESULT&quot;
+2) 1) &quot;key&quot;
+   2) &quot;temperature&quot;
+3) 1) &quot;TEXT&quot;
+   2) &quot;INT&quot;
+4) 1) &quot;sensor:003:1612633819&quot;
+   2) (integer) 83
+</code></pre>
+
+<p>In this case we update a hash, and also the table was updated.</p>
+<h2 id="querying-the-secondary-index-table">Querying the secondary index table</h2>
+<p>The secondary index table, it is just a plain SQL table.
+zeeSQL does not add any index on the table.
+User is free to add the SQL indexes it desired to the secondary index table.</p>
+<p>Without any index, each query will go through a full table scan.</p>
+<h1 id="end">End</h1>
+<p>I hope that this tutorial was helpful :)</p>
+<p>If you have any question, feel free to contact me simone@redbeardlab.com or on github: <a href="https://github.com/RedBeardLab/zeeSQL-doc">RedBeardLab/zeeSQL-doc</a></p></div>
         </div>
 
         <footer class="col-md-12">
@@ -365,5 +455,5 @@ This is quite useful especially if you have several services using the same Redi
 
 <!--
 MkDocs version : 0.16.3
-Build Date UTC : 2021-02-02 22:23:15
+Build Date UTC : 2021-02-07 22:46:47
 -->
