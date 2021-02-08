@@ -11,8 +11,8 @@ pages:
   -
     Tutorials:
       - 'Tutorial': tutorial.md
-        #  -
-        #    References: references.md
+  -
+    References: references.md
         #  -
         #    Pro: pro.md
         #  -

@@ -1,6 +1,8 @@
 # References
 
-This document explains all the API that RediSQL provide to the users.
+This document explains all the API that zeeSQL provide to the users.
+
+This document refers to the latest API, but we commit to backward compatible API.
 
 For each command, it exposes first the name and then the syntax and finally a brief explanation of what is going on inside the code.
 
@@ -8,10 +10,11 @@ Where is possible, it provides also an estimate of the complexity but since we a
 
 Finally, if it is appropriate the document also provides several references to external material that the interested reader can use to understand better the dynamics of every and each command.
 
-## REDISQL.CREATE_DB
+## ZEESQL.CREATE_DB
 
-#### REDISQL.CREATE_DB db_key [path]
-
+```
+ZEESQL.CREATE_DB db_key [PATH path]
+```
 This command creates a new DB and associates it with the key.
 
 The path argument is optional and, if provided is the file that SQLite will use.
@@ -26,44 +29,396 @@ After opening the database it inserts metadata into it and then starts a thread 
 
 **Complexity**: O(1), it means constant, it does not necessarily mean _fast_. However is fast enough for any use case facing human users (eg create a new database for every user logging in a website.)
 
+**Examples**:
+
+```
+127.0.0.1:6379> ZEESQL.CREATE_DB DB 
+1) 1) "OK"
+```
+
+This command created an in-memory database.
+Persistency is managed by Redis with AOF or RDB following the setting of your Redis instance.
+
+```
+127.0.0.1:6379> ZEESQL.CREATE_DB on_disk_db PATH /tmp/foo.sqlite
+1) 1) "OK"
+```
+
+This command created a database backed by a file, in this case `/tmp/foo.sqlite`.
+
+If the file does not exists, it is created.
+
+If the file is already a SQLite database, it get used immediately with all the data already loaded.
+
+If the file is not a SQLite database, an error is raised.
+
 **See also**: 
 
 1. [SQLite `sqlite3_open_v2`][sqlite3_open]
 
+
 ## DEL
 
-#### DEL db_key [key ...]
+```
+DEL db_key [key ...]
+```
 
 This command is a generic command from Redis.
 
-It eliminates keys from Redis itself, as well if the key is a RediSQL database create with [`REDISQL.CREATE_DB`][create_db] it will eliminate the SQLite database, stop the thread loop and clean up everything left.
+It eliminates keys from Redis itself, as well if the key is a RediSQL database create with [`ZEESQL.CREATE_DB`][create_db] it will eliminate the SQLite database, stop the thread loop and clean up everything left.
 
-If the database is backed by a file the file will be close.
+If the database is backed by a file the file will be close, but it won't be deleted.
 
 **Complexity**: DEL is O(N) on the number of keys, if you are only eliminating the key associated with the SQLite database will be constant, O(1).
+
+**Examples**:
+
+```
+127.0.0.1:6379> ZEESQL.CREATE_DB DB 
+1) 1) "OK"
+127.0.0.1:6379> DEL DB
+(integer) 1
+```
 
 **See also**: 
 
 1. [SQLite `sqlite3_close`][sqlite3_close]
 2. [Redis `DEL`][Redis DEL]
 
-## REDISQL.EXEC
+## ZEESQL.EXEC
 
-#### REDISQL.EXEC[.NOW] db_key "statement"
+```
+ZEESQL.EXEC db_key 
+    ( (COMMAND "command") | (STATEMENT statement) ) 
+    [NOW] 
+    [READ_ONLY] 
+    [INTO stream] 
+    [NO_HEADER] 
+    [JSON] 
+    [ARGS arg1 arg2 ... argn]
+```
 
-This command takes as input a Redis key created with [`REDISQL.CREATE_DB`][create_db] and a statement string.
+The EXEC command is the main command of zeeSQL. It allows to interact with the database stored in the `db_key`.
 
-Internally it transform the string into a [sqlite statement][sqlite_stmt] using [sqlite3_prepare_v2][sqlite_prepare], execute it against the database, [sqlite3_step][sqlite_step], and finally returns the results to the client.
+It takes as innput the database `db_key`, either a `COMMAND` or a `STATEMENT`, an optional series of flags, and an optional variadic number of arguments.
 
-The compilation of the string into a statement and its execution happens in a different thread from the one used by Redis and so this command has a minimum impact on the overall Redis performance, however, it does block the client.
+You need to supply **EITHER** a command (using the `COMMAND` flag) or a statement (using the `STATEMENT` flag), but you need one of them.
 
-This command is quite useful to execute [PRAGMA Statements][sqlite_pragma], for normal operations against the database is suggested to use `STATEMENTS`.
+#### Command vs Statement
 
-Also, remember that there is only a single thread for database, execution of multiple `REDISQL.EXEC` against the same database will result in a serialization of the executions, one will be executed before the others.
+The command is a valid SQL string.
+The command SQL string can contains arguments in the form `?n`. 
+Those arguments will be matched to the one provided at the end of the command.
+The first argument is binded agains `?1`, NOT against `?0`.
+Arguments that are not provided will be binded to `NULL`.
 
-If you only need to query the database without modifying the data is a better idea to use [`REDISQL.QUERY`][query].
+The statement can be created with the `ZEESQL.STATEMENT` command.
+The arguments follows the same logic of the COMMAND variants.
 
-**Complexity**: It depends entirely on the statement string. The use of a single thread for database is been chosen after several tests where the single thread configuration was faster than a multi-thread one. This is true in a write-intensive application and in a mixed write/read application.
+**Examples**:
+
+```
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "create table foo(a INT, b string);"
+1) 1) "DONE"
+2) 1) (integer) 0
+```
+
+In this example we create a new table.
+
+```
+127.0.0.1:6379> ZEESQL.STATEMENT DB NEW insert "insert into foo values(?1, ?2);"
+1) 1) "OK"
+127.0.0.1:6379> ZEESQL.EXEC DB STATEMENT insert ARGS 1 one
+1) 1) "DONE"
+2) 1) (integer) 1
+127.0.0.1:6379> ZEESQL.EXEC DB STATEMENT insert ARGS 2 two
+1) 1) "DONE"
+2) 1) (integer) 1
+```
+
+Then we create a new STATEMENT to insert values, and we execute the statement twice.
+
+```
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "select * from foo;"
+1) 1) "RESULT"
+2) 1) "a"
+   2) "b"
+3) 1) "INT"
+   2) "TEXT"
+4) 1) (integer) 1
+   2) "one"
+5) 1) (integer) 2
+   2) "two"
+```
+
+We queried the values just inserted in the table executing another command.
+
+
+#### NOW flag
+
+By default `zeeSQL` offload the SQL computation to a secondary thread.
+This free the main Redis thread and keep the Redis instance reactive.
+
+The `NOW` flags force `zeeSQL` to run the SQL computation in the main Redis thread.
+
+#### READ_ONLY flag
+
+The `READ_ONLY` flags communicate to `zeeSQL` that the execution will not modify the database.
+
+If the execution might modify the database, and the `READ_ONLY` flags is passed, `zeeSQL` will return an error.
+
+Passing the `READ_ONLY` flags allow `zeeSQL` to not replicate the command.
+Possibly saving computing resources of the replicas.
+
+**Examples**:
+
+```
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "select * from foo where a > ?1;" READ_ONLY ARGS 1
+1) 1) "RESULT"
+2) 1) "a"
+   2) "b"
+3) 1) "INT"
+   2) "TEXT"
+4) 1) (integer) 2
+   2) "two"
+```
+
+Here we correctly used the `READ_ONLY` flag to communicate with `zeeSQL` that the command will not modify the database.
+
+`zeeSQL` correctly execute the query.
+
+```
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "insert into foo values(3, 'three')" READ_ONLY
+(error) Statement is not read only but it may modify the database, use `EXEC` instead.
+```
+
+In this other case we ask `zeeSQL` to modify the database while using the `READ_ONLY` flag.
+
+`zeeSQL` correctly refuse to modify the database and returns an error.
+
+#### NO_HEADER flag
+
+By default `zeeSQL` returns informations about the result set.
+It returns the name of the columns and their type.
+
+This information might not be useful nor desiderable.
+
+With the `NO_HEADER` flag, only the result itself is returned.
+
+**Examples**:
+
+```
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "select a as number_as_integer, b as number_as_string from foo;"
+1) 1) "RESULT"
+2) 1) "number_as_integer"
+   2) "number_as_string"
+3) 1) "INT"
+   2) "TEXT"
+4) 1) (integer) 1
+   2) "one"
+5) 1) (integer) 2
+   2) "two"
+```
+
+This is the default result from `zeeSQL`. It reports the name of the columns (in this case `number_as_integer` and `number_as_string` and their type `INT` and `TEXT`).
+
+If we are not intereted in such information:
+
+```
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "select a as number_as_integer, b as number_as_string from foo;" NO_HEADER
+1) 1) "RESULT"
+2) 1) (integer) 1
+   2) "one"
+3) 1) (integer) 2
+   2) "two"
+```
+
+the `NO_HEADER` flags will omit it for us.
+
+#### JSON flag
+
+By default `zeeSQL` returns its result as an array of array.
+This makes parsing the result a little complex is some programming languanges.
+
+The JSON flags instruct `zeeSQL` to return a single JSON string as result.
+
+**Examples**:
+
+```
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "select a as number_as_integer, b as number_as_string  from foo;" JSON
+"{\"rows\":[{\"number_as_integer\":1,\"number_as_string\":\"one\"},{\"number_as_integer\":2,\"number_as_string\":\"two\"}],\"number_of_rows\":2,\"columns\":{\"number_as_integer\":\"INT\",\"number_as_strin
+g\":\"TEXT\"}}"
+```
+
+The JSON is valid JSON even if compressed:
+
+```
+$ redis-cli ZEESQL.EXEC DB COMMAND "select a as number_as_integer, b as number_as_string  from foo;" JSON | jq
+{
+  "rows": [
+    {
+      "number_as_integer": 1,
+      "number_as_string": "one"
+    },
+    {
+      "number_as_integer": 2,
+      "number_as_string": "two"
+    }
+  ],
+  "number_of_rows": 2,
+  "columns": {
+    "number_as_integer": "INT",
+    "number_as_string": "TEXT"
+  }
+}
+```
+
+Of course, this can be combined with the `NO_HEADER` flag.
+
+
+```
+$ redis-cli ZEESQL.EXEC DB COMMAND "select a as number_as_integer, b as number_as_string  from foo;" JSON NO_HEADER | jq
+{
+  "rows": [
+    {
+      "number_as_integer": 1,
+      "number_as_string": "one"
+    },
+    {
+      "number_as_integer": 2,
+      "number_as_string": "two"
+    }
+  ]
+}
+```
+
+
+
+#### INTO stream
+
+`zeeSQL` has the capacity to push the result of a computation in a Redis Stream.
+
+This is desiderable if you want to:
+
+1. consume the result at a later time,
+2. or cache the result, 
+3. or if the result is rather big and you don't want to send all of it over the network.
+
+The `INTO stream` option will inform `zeeSQL` to push the result of the computation into the Redis STREAM called `stream`.
+
+The `INTO stream` option is available only if the query is marked as `READ_ONLY`.
+
+The command executes [`XADD`][redis_xadd] to the stream.
+
+If the stream does not exists a new one is created. 
+
+If the stream already exists the rows are simply appended.
+
+The command itself is eager, hence it compute the whole result, append it into the stream, and then it returns. 
+Once the command returns, the whole result set is already in the Redis stream.
+
+The return value of the command depends on the result of the query:
+
+If the result of the query is empty, it simply returns `["DONE", 0]`.
+
+If at least one row is returned by the query the command returns:
+
+1.the name of the stream where it appended the resulting rows, which is always the one passed as input
+2. the first ID added to the stream 
+3. the last ID added to the stream 
+4. and the total number of entries added to the stream.
+
+Using a standard Redis Stream all the standard consideration applies.
+
+1. The stream is not deleted by zeeSQL, hence it can definitely be used for caching, on the other hand too many streams will use memory.
+2. The stream use a standard Redis key, in a cluster environment you should be sure that the database that is executing the query and the stream that will accomodate the result are on the same cluster node. 
+
+This can be accomplished easily by forcing the stream name to hash to the same cluster node of the database, it is sufficiento to use a `stream_name` composed as such `{db_key}:what:ever:here`. Redis will hash only the part between the `{` and `}` in order to compute the cluster node.
+3. The result can be consumed using the standard [Redis streams commands][redis_stream_commands], two good starting points are [`XREAD`][redis_xread] and [`XRANGE`][redis_xrange].
+
+The key of the stream elements are the tuple `(type, column name)` separated by a colon `:`.
+
+**Examples**:
+
+```
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "select * from foo;" INTO foo_stream
+(error) Asked a STREAM, but the query is not `READ_ONLY` (flag not set), this is not supported.
+```
+
+At first we tried to push the result of a query that it is not marked as `READ_ONLY` and this correctly fails.
+
+```
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "select * from foo where a > 100;" READ_ONLY INTO foo_stream
+1) 1) "DONE"
+2) 1) (integer) 0
+```
+
+Above we execute a query that return an empty result.
+
+`zeeSQL` simply communicate us that the result is empty.
+
+```
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "select * from foo;" READ_ONLY INTO foo_stream                                                                                       1) 1) "RESULT"
+2) 1) "foo_stream"
+   2) "1612797707753-0"
+   3) "1612797707753-1"
+   4) (integer) 2
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "select * from foo;" READ_ONLY INTO foo_stream JSON
+"{\"rows\":[{\"stream\":\"foo_stream\",\"first_id\":\"1612797722505-0\",\"last_id\":\"1612797722505-1\",\"size\":2}]}"
+```
+
+Then we push into the Redis stream `foo_stream` the result of the query `select * from foo`.
+
+We do it twice, once using the standard return and the second time using the JSON return.
+
+We pushed twice, a query that returned two results, so we expect 4 elements in the stream.
+
+```
+127.0.0.1:6379> XLEN foo_stream
+(integer) 4
+```
+
+We can read the elements from the stream using the standard redis stream interface.
+In this case we are going to read only the first two elements.
+
+```
+127.0.0.1:6379> XRANGE foo_stream - + COUNT 2
+1) 1) "1612797707753-0"
+   2) 1) "int:a"
+      2) "1"
+      3) "text:b"
+      4) "one"
+2) 1) "1612797707753-1"
+   2) 1) "int:a"
+      2) "2"
+      3) "text:b"
+      4) "two"
+```
+
+**Complexity**: Beside the complexity of the query, the `INTO stream` options add the complexity of adding each row to the redis stream, which is `O(n)` where `n` is the amount of row returned by the query.
+
+**See also**:
+
+3. [Redis Streams Intro][redis_streams_intro]
+4. [Redis Streams Commands][redis_stream_commands]
+5. [`XADD`][redis_xadd]
+6. [`XREAD`][redis_xread]
+7. [`XRANGE`][redis_xrange]
+
+
+#### ARGS arguments
+
+The ARGS arguments are used to pass arguments to the statements or command.
+
+They are variadic, and you can pass as many as you need.
+
+In the SQL, the first argument will be binded to `?1`, the second to `?2` and so on.
+Please note that the first argument is NOT binded to `?0`.
+
+If an argument is not binded, for instance you pass a query with `?4` but only provide 3 arguments, then, that argument is binded to `NULL`.
+
+Redis works using a text protocol, all the arguments are encoded as text, hence the module is forced to use the procedure `sqlite3_bind_text`, however, SQLite is smart enough to recognize numbers and treat them correctly. Numbers will be treated as numbers and text will be treated as text.
+
 
 **See also**:
 
@@ -73,11 +428,20 @@ If you only need to query the database without modifying the data is a better id
 4. [SQLite `PRAGMA`s][sqlite_pragma]
 5. [Redis Blocking Command][Redis Blocking Command]
 
-## REDISQL.QUERY
 
-#### REDISQL.QUERY[.NOW] db_key "statement"
+## ZEESQL.QUERY
 
-This command behaves similarly to [`REDISQL.EXEC`][exec] but it imposes an additional constraint on the statement it executes.
+```
+ZEESQL.QUERY db_key 
+    ( (COMMAND "command") | (STATEMENT statement) ) 
+    [NOW] 
+    [INTO stream] 
+    [NO_HEADER] 
+    [JSON] 
+    [ARGS arg1 arg2 ... argn]
+```
+
+This command behaves similarly to [`ZEESQL.EXEC`][exec] but it imposes an additional constraint on the statement it executes.
 
 It only executes the statement if it is a read-only operation, otherwise, it returns an error.
 
@@ -85,9 +449,9 @@ A read-only operation is defined by the result of calling [`sqlite3_stmt_readonl
 
 The statement is executed if and only if [`sqlite3_stmt_readonly`][sqlite_readonly] returns true.
 
-If you need to execute the same query over and over it is a good idea to create a statement and use [`REDISQL.QUERY_STATEMENT`][query_statement].
+This command is exactly like `ZEESQL.EXEC ... READ_ONLY` however it can be executed against Redis replicas.
 
-**Complexity**: Similar to [`REDISQL.EXEC`][exec], however, if a statement is not read-only it is aborted immediately and it does return an appropriate error.
+**Complexity**: Similar to [`ZEESQL.EXEC`][exec], however, if a statement is not read-only it is aborted immediately and it does return an appropriate error.
 
 **See also**:
 
@@ -96,288 +460,168 @@ If you need to execute the same query over and over it is a good idea to create 
 3. [SQLite `sqlite3_step`][sqlite_step]
 4. [SQLite `PRAGMA`s][sqlite_pragma]
 5. [Redis Blocking Command][Redis Blocking Command] 
-6. [`REDISQL.EXEC`][exec]
+6. [`ZEESQL.EXEC`][exec]
 7. [SQLite `sqlite3_stmt_readonly`][sqlite_readonly]
-8. [`REDISQL.QUERY_STATEMENT`][query_statement] 
+8. [`ZEESQL.QUERY_STATEMENT`][query_statement] 
 
-## REDISQL.QUERY.INTO
-
-#### REDISQL.QUERY.INTO[.NOW] stream_name db_key "query"
-
-This command is similar to [`REDISQL.QUERY`][query] but instead of returning the result of the query, it append each row to the [stream][redis_streams_intro] `stream_name` passed as first argument. 
-
-The query must be a read-only one, exactly as [`REDISQL.QUERY`][query].
-
-The command executes [`XADD`][redis_xadd] to the stream, hence if the stream does not exists a new one is created. On the other hand, if the stream already exists the rows are simply appended.
-
-The command itself is eager, hence it compute the whole result, append it into the stream, and then it returns. Once the command returns, the whole result set is already in the Redis stream.
-
-The return value of the command depends on the result of the query:
-
-1. If the result of the query is empty, it simply returns `["DONE", 0]`, exactly like [`REDISQL.QUERY`][query].
-2. If at least one row is returnend by the query the command returns the name of the stream where it appended the resulting rows, which is exactly the one passed as input, the first and the last ID added to the stream and the total number of entries added to the stream.
-
-The stream will use autogeneratated IDs.
-
-Each entry in a stream is a set of field-value (key-value) pairs. The field (key) will be the type of the row and its name separated by a colon. It cpuld be something like `int:users` or `text:user_name` or even `real:x_coordinate`.
-
-The value will simply store the value of the column untouched. 
+## ZEESQL.STATEMENT
 
 ```
-127.0.0.1:6379> REDISQL.CREATE_DB DB
-OK
-127.0.0.1:6379> REDISQL.EXEC DB "CREATE TABLE foo(a int, b int);"
-1) DONE
-2) (integer) 0
-127.0.0.1:6379> REDISQL.EXEC DB "INSERT INTO foo(a) VALUES(1)"
-1) DONE
-2) (integer) 1
-127.0.0.1:6379> REDISQL.EXEC DB "INSERT INTO foo VALUES(3, 4)"
-1) DONE
-2) (integer) 1
-127.0.0.1:6379> REDISQL.EXEC DB "INSERT INTO foo VALUES(5, 6)"
-1) DONE
-2) (integer) 1
-127.0.0.1:6379> REDISQL.EXEC DB "INSERT INTO foo VALUES(10, 19)"
-1) DONE
-2) (integer) 1
-127.0.0.1:6379> REDISQL.QUERY.INTO {DB}:all_foo DB "SELECT * FROM foo"
-1) 1) "{DB}:all_foo"
-   2) "1549811093979-0"
-   3) "1549811093979-3"
-   4) (integer) 4
-127.0.0.1:6379> XRANGE {DB}:all_foo - +
-1) 1) "1549811093979-0"
-   2) 1) "int:a"
-      2) "1"
-      3) "null:b"
-      4) "(null)"
-2) 1) "1549811093979-1"
-   2) 1) "int:a"
-      2) "3"
-      3) "int:b"
-      4) "4"
-3) 1) "1549811093979-2"
-   2) 1) "int:a"
-      2) "5"
-      3) "int:b"
-      4) "6"
-4) 1) "1549811093979-3"
-   2) 1) "int:a"
-      2) "10"
-      3) "int:b"
-      4) "19"
+ZEESQL.STATEMENT db_key
+    (
+        (NEW stmt "query" [CAN_UPDATE]) | 
+        (DELETE stmt) | 
+        (UPDATE stmt "query" [CAN_CREATE]) |
+        (SHOW stmt) |
+        LIST
+    )
+    [NOW]
 ```
 
+This command manages `zeeSQL` statements.
 
-Using a standard Redis Stream all the standard consideration applies.
+A statement is a pre-compiled SQL query, if you are going to execute your query over and over again, it is a good idea to make it into a statement.
+Under the hood it is a [sqlite statement][sqlite_stmt].
 
-1. The stream is not deleted by RediSQL, hence it can definitely be used for caching, on the other hand too many streams will use memory.
-2. The stream use a standard Redis key, in a cluster environment you should be sure that the database that is executing the query and the stream that will accomodate the result are on the same cluster node. 
-This can be accomplished easily by forcing the stream name to hash to the same cluster node of the database, it is sufficiento to use a `stream_name` composed as such `{db_key}:what:ever:here`. Redis will hash only the part between the `{` and `}` in order to compute the cluster node.
-3. The result can be consumed using the standard [Redis streams commands][redis_stream_commands], two good starting points are [`XREAD`][redis_xread] and [`XRANGE`][redis_xrange].
+Statements can be used in the `ZEESQL.EXEC db_key STATEMENT stmt` command and in the `ZEESQL.QUERY db_key STATEMENT stmt` command.
 
-**Complexity**: The complexity of the command is `O(n)` where `n` is the amount of row returned by the query.
+There are five different actions that can be invoke with the STATEMENT command.
 
-**See also**:
+1. Create a new statement with the `NEW` option.
+2. Delete a statement with the `DELETE` option.
+3. Update a statement with the `UPDATE` option.
+4. Show the SQL behind a statement with the `SHOW` option.
+5. List all the statements with the `LIST` option.
 
-1. [`REDISQL.QUERY`][query] 
-2. [`REDISQL.QUERY_STATEMENT.INTO`][query_statement_into] 
-3. [Redis Streams Intro][redis_streams_intro]
-4. [Redis Streams Commands][redis_stream_commands]
-5. [`XADD`][redis_xadd]
-6. [`XREAD`][redis_xread]
-7. [`XRANGE`][redis_xrange]
+The `STATEMENT` command includes the `NOW` flag. 
+The `NOW` flag forces `zeeSQL` to execute the action in the main Redis thread.
+In standard operations mode, it should not be used.
 
-## REDISQL.CREATE_STATEMENT
+#### NEW
 
-#### REDISQL.CREATE_STATEMENT[.NOW] db_key stmt_identifier "statement"
+The `NEW` option takes as input the name to associate with the statement and an SQL query to compile.
 
-This command compiles a statement string into a [sqlite statement][sqlite_stmt] and associate such statement to an identifier.
+The command compiles the SQL query into a pre-compiled statement, and associate it with the name.
 
-Using this command you can insert parameters using the special symbol `?NNN`, those parameters will be bind to the statements when you are executing the statement itself.
+The `CAN_UPDATE` flag to the `NEW` command, instruct `zeeSQL` to behave as an `UPDATE` if the statement name is already allocated to an old statement.
+Otherwise, without the `CAN_UPDATE` flag, if the statement name is already used by a different statement, the command fails with an error.
 
-For now only the `?NNN` syntax is supported, where `N` is a digit (Ex. `?1`, `?2`, `?3` ...)
+#### DELETE
 
-This command does not execute anything against the database, but simply store the sqlite statements into a dictionary associated with the identifier provided (`stmt_identifier`). Then it stores the information regarding the statement in the metadata table in order to provide a simple way to restore also the statements.
+The `DELETE` option deletes a statement.
 
-The statement is associated with a database, a statement created for one database cannot be used for another database, you need to create a different one. This allows a simple and fast way to provide persistence.
+#### UPDATE
 
-You can execute the statement with [`REDISQL.EXEC_STATEMENT`][exec_statement].
+The `UPDATE` options updates a statement, associating the old name with the statement compiled from the SQL query.
 
-You cannot overwrite a statement using this command.
+If the name does not exists, `UPDATE` fails, unless the `CAN_CREATE` flag is provided.
+In such case `UPDATE` behave like `NEW`.
 
-If you need to change the implementation of a statement you have two options:
+#### SHOW
 
-1. Delete the statement using [`REDISQL.DELETE_STATEMENT`][delete_statement] and the create a new one.
-2. Use [`REDISQL.UPDATE_STATEMENT`][update_statement]
+The `SHOW` options returns the SQL query behind one statement.
 
-Suppose that a service needs a particular statement to be defined in order to work, this safety measure allows the users to simply go ahead, try to create it, and in case catch the error.
+#### LIST
 
-Also, this command is not blocking, meaning that all the work happens in a separate thread respect the redis one.
+The `LIST` optons returns all the statements and their SQL queries.
 
-Please keep in mind that the parameters should be named in order and that there should not be any gap.
+Both `SHOW` and `LIST` will report:
 
-```SQL
-INSERT INTO foo VALUES(?1, ?2, ?3); -- this one is fine and we work as you expect
+1. The name of the statement
+2. The SQL query associate with the statement
+3. The number of paramenters the statement expects
+4. If the statement is read only or not
 
-INSERT INTO foo VALUES(?1, ?123, ?564); -- this one will be more problematic, and you should avoid it
+**Complexity**: Operation on the statements happens in constant time O(1). Listing the statements happens in O(n) with `n` number of statements present in the database.
+
+**Examples**:
+
+At first we create a new statement, 
+
+```
+127.0.0.1:6379> ZEESQL.STATEMENT DB NEW select_1 "SELECT 1;"
+1) 1) "OK"
 ```
 
-Keep in mind that SQLite start to count the bounding parameters from 1 and not from 0, using `?0` is an error.
+We can then list, the statement:
 
-**Complexity**: If we assume that the time necessary to compile a string into a sqlite statement is constant, overall the complexity is O(1), again constant, not necessarily _fast_.
+```
+127.0.0.1:6379> ZEESQL.STATEMENT DB LIST
+1) 1) "RESULT"
+2) 1) "identifier"
+   2) "SQL"
+   3) "parameters_count"
+   4) "read_only"
+3) 1) "TEXT"
+   2) "TEXT"
+   3) "INT"
+   4) "INT"
+4) 1) "select_1"
+   2) "SELECT 1;"
+   3) (integer) 0
+   4) (integer) 1
+```
+
+The statement can be update, but we need to use the `UPDATE` command or the `CAN_UPDATE` flag.
+
+```
+127.0.0.1:6379> ZEESQL.STATEMENT DB NEW select_1 "SELECT '1';"
+(error) The statement is already present in the database, try with UPDATE_STATEMENT
+127.0.0.1:6379> ZEESQL.STATEMENT DB NEW select_1 "SELECT '1';" CAN_UPDATE
+1) 1) "OK"
+127.0.0.1:6379> ZEESQL.STATEMENT DB UPDATE select_1 "SELECT '1';"
+1) 1) "OK"
+```
+
+We change `select_1` to return a string and not an integer.
+
+```
+127.0.0.1:6379> ZEESQL.STATEMENT DB UPDATE select_plus_one "SELECT ?1 + 1;" CAN_CREATE
+1) 1) "OK"
+```
+
+We create another statement, this time we create the statement with the `UPDATE` command and the `CAN_CREATE` flag.
+
+```
+127.0.0.1:6379> ZEESQL.STATEMENT DB LIST
+1) 1) "RESULT"
+2) 1) "identifier"
+   2) "SQL"
+   3) "parameters_count"
+   4) "read_only"
+3) 1) "TEXT"
+   2) "TEXT"
+   3) "INT"
+   4) "INT"
+4) 1) "select_1"
+   2) "SELECT '1';"
+   3) (integer) 0
+   4) (integer) 1
+5) 1) "select_plus_one"
+   2) "SELECT ?1 + 1;"
+   3) (integer) 1
+   4) (integer) 1
+127.0.0.1:6379> ZEESQL.EXEC DB STATEMENT select_plus_one NO_HEADER ARGS 5
+1) 1) "RESULT"
+2) 1) (integer) 6
+```
 
 **See also**:
 
 1. [SQLite `sqlite3_prepare_v2`][sqlite_prepare]
 2. [SQLite `statement` aka `sqlite3_stmt`][sqlite_stmt]
 3. [SQLite bindings, `sqlite3_bind_text`][sqlite_binding]
-4. [`REDISQL.EXEC_STATEMENT`][exec_statement]
-5. [`REDISQL.DELETE_STATEMENT`][delete_statement]
-6. [`REDISQL.UPDATE_STATEMENT`][update_statement]
-7. [Redis Blocking Command][Redis Blocking Command]
-
-## REDISQL.EXEC_STATEMENT
-
-#### REDISQL.EXEC_STATEMENT[.NOW] db_key stmt_identifier [binding_parameters ...]
-
-This command binds all the parameters to the statement created using [`REDISQL.CREATE_STATEMENT`][create_statement] and identified by `stmt_identifier`. Then the module executes the statement against the database associated to `db_key`.
-
-For each parameter in the query of the form `?nnn` the engine will look for the `nnn-th` binding_parameters.
-So if the statements is from the following query:
-
-``` SQL
-INSERT INTO foo VALUES(?1, ?2, ?3);
-```
-
-You will only need to provide 3 parameters and they will be bound, in order to `?1`, `?2` and `?3`.
-
-If your statements looks like this:
-
-``` SQL
-INSERT INTO foo VALUES(?1, ?123, ?564);
-```
-
-You will need to provide 564 parameters and only the first, the 123-rd and the 564-th will be considered.
-
-SQLite starts to count the binding parameters from 0, not from 1. Using `?0` is an error.
-
-Redis works using a text protocol, all the arguments are encoded as text, hence the module is forced to use the procedure `sqlite3_bind_text`, however, SQLite is smart enough to recognize numbers and treat them correctly. Numbers will be treated as numbers and text will be treated as text.
-
-Finally, once completed the binding part the statement is executed and its result is returned to the client.
-
-This command as well is not blocking, all the work happens in a different thread from the one of Redis.
-
-If you need to query your database, without modifying the data is a better idea to use [`REDISQL.QUERY_STATEMENT`][query_statement].
- 
-
-**Complexity**: The complexity to retrieve and to bind the parameters is roughly constant for any practical purpose, however, the overall complexity will be dominated by the time to execute the query.
-
-**See also**:
-
-1. [SQLite `statement` aka `sqlite3_stmt`][sqlite_stmt]
-2. [SQLite bindings, `sqlite3_bind_text`][sqlite_binding]
-3. [`REDISQL.CREATE_STATEMENT`][create_statement]
 4. [Redis Blocking Command][Redis Blocking Command]
-5. [`REDISQL.QUERY_STATEMENT`][query_statement] 
 
 
-## REDISQL.QUERY_STATEMENT
+## ZEESQL.COPY
 
-#### REDISQL.QUERY_STATEMENT[.NOW] db_key stmt_identifier [binding_parameters ...]
-
-This command behaves similarly to [`REDISQL.EXEC_STATEMENT`][exec_statement] however it does impose an additional constraint.
-
-It executes the statement if it is a read-only operation, otherwise, it returns an error.
-
-A read-only operation is defined by the result of calling [`sqlite3_stmt_readonly`][sqlite_readonly] on the compiled statement.
-
-The statement is executed if and only if [`sqlite3_stmt_readonly`][sqlite_readonly] returns true.
-
-The result of [`sqlite3_stmt_readonly`][sqlite_readonly] is cached.
-
-If you don't want to create a statement to run a query just once you can use [`REDISQL.QUERY`][query].
-
-**Complexity**: Similar to [`REDISQL.EXEC_STATEMENT`][exec_statement], however, if a statement is not read-only it is aborted immediately and it does return an appropriate error.
-
-**See also**:
-
-1. [SQLite `sqlite3_prepare_v2`][sqlite_prepare]
-2. [SQLite `statement` aka `sqlite3_stmt`][sqlite_stmt]
-3. [SQLite `sqlite3_step`][sqlite_step]
-4. [SQLite `PRAGMA`s][sqlite_pragma]
-5. [Redis Blocking Command][Redis Blocking Command] 
-6. [`REDISQL.EXEC_STATEMENT`][exec_statement]
-7. [SQLite `sqlite3_stmt_readonly`][sqlite_readonly]
-8. [`REDISQL.QUERY`][query] 
-
-
-## REDISQL.QUERY_STATEMENT.INTO
-
-#### REDISQL.QUERY_STATEMENT.INTO[.NOW] stream_name db_key stmt_identifier [binding_parameters ...]
-
-This command behave like [`REDISQL.QUERY.INTO`][query_into] but instead of a query it takes as input a read-only statement and its binding paramenters.
-
-**Complexity**: The complexity of the command is `O(n)` where `n` is the amount of row returned by the query.
-
-**See also**:
-
-1. [`REDISQL.QUERY.INTO`][query_into] 
-2. [`REDISQL.QUERY_STATEMENT`][query_statement] 
-3. [Redis Streams Intro][redis_streams_intro]
-4. [Redis Streams Commands][redis_stream_commands]
-5. [`XADD`][redis_xadd]
-6. [`XREAD`][redis_xread]
-7. [`XRANGE`][redis_xrange]
-
-
-
-## REDISQL.DELETE_STATEMENT
-
-#### REDISQL.DELETE_STATEMENT[.NOW] db_key stmt_identifier
-
-This command eliminates a statement from the database.
-
-It first looks it up into the internal hash table, if it finds the statement the command removes it from the internal hash table and then remove it from an internal SQLite table.
-
-Also, this command is not blocking and work in a different thread from the main Redis one.
-
-**Complexity**: The complexity is constant and it can be considered _fast_ for most practical application.
-
-**See also**:
-
-1. [SQLite `statement` aka `sqlite3_stmt`][sqlite_stmt]
-2. [`REDISQL.CREATE_STATEMENT`][create_statement]
-3. [`REDISQL.EXEC_STATEMENT`][exec_statement]
-4. [`REDISQL.UPDATE_STATEMENT`][update_statement]
-5. [Redis Blocking Command][Redis Blocking Command]
-
-## REDISQL.UPDATE_STATEMENT
-
-#### REDISQL.UPDATE_STATEMENT[.NOW] db_key stmt_identifier "statement"
-
-The command update and _existing_ statement changing its internal implementation to the one provide as string.
-
-If the statement does not exist the command will fail and return an error, again this is a safety measure, you must be completely aware that you are changing the implementation of a statement and updating a not existing statement or creating an existing one will result in an error.
-
-Internally the command starts checking if the statement is already defined, then it tries to compile the string into a [`sqlite3_stmt`][sqlite_stmt] and if everything went right it finally updates the metadata table and finally returns to the client.
-
-This command is not blocking as well.
-
-**Complexity**: The complexity is constant and it can be considered _fast_ for most practical application.
-
-**See also**:
-
-1. [SQLite `statement` aka `sqlite3_stmt`][sqlite_stmt]
-2. [`REDISQL.CREATE_STATEMENT`][create_statement]
-3. [`REDISQL.EXEC_STATEMENT`][exec_statement]
-4. [`REDISQL.DELETE_STATEMENT`][delete_statement]
-5. [Redis Blocking Command][Redis Blocking Command]
-
-## REDISQL.COPY
-
-#### REDISQL.COPY[.NOW] db_key_source db_key_destination 
+```
+ZEESQL.COPY 
+    FROM db_key_source 
+    TO db_key_destination 
+    [NOW] 
+```
 
 The command copies the source database into the destination database.
 
@@ -398,124 +642,222 @@ This command use the [backup API][backup_api] of sqlite.
 
 **Complexity**: The complexity is linear on the number of page (dimension) of the source database, beware it can be "slow" if the source database is big, during the copy the `source` database is busy and it cannot serve other queries. 
 
+**Example**:
+
+
+```
+127.0.0.1:6379> ZEESQL.CREATE_DB DB01
+1) 1) "OK"
+127.0.0.1:6379> ZEESQL.EXEC DB01 COMMAND "create table foo(a, b);"
+1) 1) "DONE"
+2) 1) (integer) 0
+127.0.0.1:6379> ZEESQL.EXEC DB01 COMMAND "insert into foo values(1,2),(3,4);"
+1) 1) "DONE"
+2) 1) (integer) 2
+127.0.0.1:6379> ZEESQL.CREATE_DB DB02
+1) 1) "OK"
+127.0.0.1:6379> ZEESQL.EXEC DB02 COMMAND "select * from foo"
+(error) no such table: foo
+127.0.0.1:6379> ZEESQL.COPY FROM DB01 TO DB02
+1) 1) "OK"
+127.0.0.1:6379> ZEESQL.EXEC DB02 COMMAND "select * from foo"
+1) 1) "RESULT"
+2) 1) "a"
+   2) "b"
+3) 1) "INT"
+   2) "INT"
+4) 1) (integer) 1
+   2) (integer) 2
+5) 1) (integer) 3
+   2) (integer) 4
+```
+
+In the example we create a database, we create a table, and then we pushed few rows nto the table.
+
+We then create another database, but this time we didn't create the table, neither pushed any row.
+
+As expected, trying to query the second database returned an error.
+
+After copying the content of the first database into the second, the second database has become a perfect copy of the first one.
+
 **See also**:
 
 1. [Backup API][backup_api]
 
+## ZEESQL.INDEX
 
-## REDISQL.STATISTICS
+The index command accept 3 different options:
 
-#### REDISQL.STATISTICS
+1. NEW
+2. LIST
+3. DELETE
 
-The command print the internal statistics of RediSQL.
+We will illustrate them separately.
 
-There are 3 counter associated to each command. 
-The first one for counting the number of times the command is been invoked.
-The second (`OK` counter) keep tracks of how many times the command returned successfully.
-The third (`ERR` counter) memorize the amount of times the command returned an error. 
-
-The counters are implemented as atomic counters, they don't use locks nor introduces any notiaceble slowdown to the application.
+#### ZEESQL.INDEX NEW
 
 ```
-127.0.0.1:6379> REDISQL.STATISTICS
- 1) 1) "CREATE_DB"
-    2) (integer) 1
- 2) 1) "CREATE_DB OK"
-    2) (integer) 1
- 3) 1) "CREATE_DB ERR"
-    2) (integer) 0
- 4) 1) "EXEC"
-    2) (integer) 4
- 5) 1) "EXEC OK"
-    2) (integer) 4
- 6) 1) "EXEC ERR"
-    2) (integer) 0
- 7) 1) "QUERY"
-    2) (integer) 0
- 8) 1) "QUERY OK"
-    2) (integer) 0
- 9) 1) "QUERY ERR"
-    2) (integer) 0
-10) 1) "QUERY.INTO"
-    2) (integer) 0
-11) 1) "QUERY.INTO OK"
-    2) (integer) 0
-12) 1) "QUERY.INTO ERR"
-    2) (integer) 0
-13) 1) "CREATE_STATEMENT"
-    2) (integer) 3
-14) 1) "CREATE_STATEMENT OK"
-    2) (integer) 1
-15) 1) "CREATE_STATEMENT ERR"
-    2) (integer) 2
-16) 1) "EXEC_STATEMENT"
-    2) (integer) 2
-17) 1) "EXEC_STATEMENT OK"
-    2) (integer) 2
-18) 1) "EXEC_STATEMENT ERR"
-    2) (integer) 0
-19) 1) "UPDATE_STATEMENT"
-    2) (integer) 2
-20) 1) "UPDATE_STATEMENT OK"
-    2) (integer) 1
-21) 1) "UPDATE_STATEMENT ERR"
-    2) (integer) 1
-22) 1) "DELETE_STATEMENT"
-    2) (integer) 0
-23) 1) "DELETE_STATEMENT OK"
-    2) (integer) 0
-24) 1) "DELETE_STATEMENT ERR"
-    2) (integer) 0
-25) 1) "QUERY_STATEMENT"
-    2) (integer) 0
-26) 1) "QUERY_STATEMENT OK"
-    2) (integer) 0
-27) 1) "QUERY_STATEMENT ERR"
-    2) (integer) 0
-28) 1) "QUERY_STATEMENT.INTO"
-    2) (integer) 0
-29) 1) "QUERY_STATEMENT.INTO OK"
-    2) (integer) 0
-30) 1) "QUERY_STATEMENT.INTO ERR"
-    2) (integer) 0
-31) 1) "COPY"
-    2) (integer) 0
-32) 1) "COPY OK"
-    2) (integer) 0
-33) 1) "COPY ERR"
-    2) (integer) 0
+ZEESQL.INDEX db_key 
+    NEW
+    TABLE table_name
+    [PREFIX prefix]
+    SCHEMA column_name column_type [column_name column_type ...]
+```
+
+Creates a new secondary index table for the Redis hashes.
+
+The secondary index will refer to the table `table_name` and will use the columns indicated in the `SCHEMA` parameter.
+
+`column_type` can be whatever accepted by SQLite as column name, suggestions are `TEXT`, `INT`, `FLOAT` or `BLOB`.
+
+If a prefix is provided, only the Redis hashes that start with that prefix are indexed in the table.
+If the prefix is omitted, the `*` prefix (catch all) is assumed.
+
+If the table does not exists when the index is created, `zeeSQL` create it.
+
+If the table already exists, `zeeSQL` takes no action.
+However, if the table exists but contains the wrong columns, `zeeSQL` may find impossible to insert the hashes into the secondary index.
+
+It is possible to create multiple indexes, with the same table, same schema, but different prefix.
+
+`zeeSQL` store in the secondary index table, the main Redis hash key, as primary key.
+
+The table created by `zeeSQL` behave like any other table, so it can be queried, modified and indexed, using the standard `ZEESQL.EXEC` interface.
+
+No step are taken in order to avoid manual deletion of update of the secondary index table by the user.
+
+Secondary indexes are univocably identify by the combination of the table in which they write and the prefix.
+
+**Example**:
+
+In this example we can see how to create a secondary index, and how the secondary index automatically keeps the values between Redis and zeeSQL in synchronism.
+
+```
+127.0.0.1:6379> ZEESQL.INDEX DB NEW TABLE users prefix user:* SCHEMA username STRING score INT
+OK
+127.0.0.1:6379> HMSET user:1001 username aaa score 0
+OK
+127.0.0.1:6379> HMSET user:1002 username bbb score 0
+OK
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "select * from users"
+1) 1) "RESULT"
+2) 1) "key"
+   2) "username"
+   3) "score"
+3) 1) "TEXT"
+   2) "TEXT"
+   3) "INT"
+4) 1) "user:1001"
+   2) "aaa"
+   3) (integer) 0
+5) 1) "user:1002"
+   2) "bbb"
+   3) (integer) 0
+127.0.0.1:6379> HINCRBY user:1002 score 3
+(integer) 3
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "select * from users"
+1) 1) "RESULT"
+2) 1) "key"
+   2) "username"
+   3) "score"
+3) 1) "TEXT"
+   2) "TEXT"
+   3) "INT"
+4) 1) "user:1001"
+   2) "aaa"
+   3) (integer) 0
+5) 1) "user:1002"
+   2) "bbb"
+   3) (integer) 3
+```
+
+#### ZEESQL.INDEX LIST
+
+The list option show the active secondary index.
+
+The secondary indexes are identify by the table in which they write an the prefix they use to filter the keys.
+
+**Example**:
+
+```
+127.0.0.1:6379> ZEESQL.INDEX DB LIST
+1) 1) "RESULT"
+2) 1) "users"
+   2) "user:*"
+127.0.0.1:6379> ZEESQL.INDEX DB NEW TABLE games prefix games:* SCHEMA first_player STRING second_player STRING score_player_1 INT score_player_2 INT
+OK
+127.0.0.1:6379> ZEESQL.INDEX DB LIST
+1) 1) "RESULT"
+2) 1) "users"
+   2) "user:*"
+3) 1) "games"
+   2) "games:*"
+```
+
+#### ZEESQL.INDEX DELETE
+
+```
+ZEESQL.INDEX db_key 
+    DELETE
+    TABLE table_name
+    [PREFIX prefix]
 ```
 
 
+The `DELETE` option removes a secondary index.
 
-**Complexity**: The complexity is constant.
+Hashes that match the prefix are not inserted aymore in the table after the index is removed.
 
-## REDISQL.COPY
+The `DELETE` option takes as input the table and the prefix that indefies the secondary index to remove.
 
-#### REDISQL.COPY[.NOW] db_key_source db_key_destination 
+If the prefix is omitted the `*` (catch all) prefix is assumed.
 
-The command copies the source database into the destination database.
+**Example**:
 
-The content of the destination databases is completely ignored and lost.
+```
+127.0.0.1:6379> ZEESQL.INDEX DB NEW TABLE users PREFIX user:* SCHEMA username STRING score INT
+OK
+127.0.0.1:6379> HMSET user:1001 username first_user score 12
+OK
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "select * from users" NO_HEADER
+1) 1) "RESULT"
+2) 1) "user:1001"
+   2) "first_user"
+   3) (integer) 12
+127.0.0.1:6379> ZEESQL.INDEX DB DELETE TABLE users PREFIX user:*
+1) 1) "DONE"
+2) 1) (integer) 1
+127.0.0.1:6379> HMSET user:1002 username second_user score 5
+OK
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "select * from users" NO_HEADER
+1) 1) "RESULT"
+2) 1) "user:1001"
+   2) "first_user"
+   3) (integer) 12
+```
 
-It is not important if the databases are stored in memory or backed by disk, the `COPY` command will work nevertheless.
+In the example, we first create an index.
 
-This command is useful to:
+Then we add a Redis hash that match the secondary index prefix, so it is added to the secondary index table.
 
-1. Create backups of databases
-2. Load data from a slow, disk based, databases into a fast in-memory one
-3. To persist data from a in-memory database into a disk based database
-4. Initialize a database with a predefined status
+Then, delete the index.
 
-Usually the destination database is an empty database just created, while the source one is a databases where we have been working for a while.
+And we can confirm that new users are not added anymore to the secondary index table.
 
-This command use the [backup API][backup_api] of sqlite.
+## ZEESQL.LICENSE
 
-**Complexity**: The complexity is linear on the number of page (dimension) of the source database, beware it can be "slow" if the source database is big, during the copy the `source` database is busy and it cannot serve other queries. 
+```
+ZEESQL.LICENSE
+    ( SET "license" ) | SHOW
+```
 
-**See also**:
+The `SET` option will set the license to use for `zeeSQL`.
 
-1. [Backup API][backup_api]
+The license is first check against our backend server, and if the license is correct, it will return `OK` otherwise it will return an error.
+
+Is is required an internet connection in order to set the license.
+
+The `SHOW` option will show the license that is actually in use in your `zeeSQL` process.
 
 [sqlite3_close]: https://sqlite.org/c3ref/close.html
 [Redis DEL]: https://redis.io/commands/del
