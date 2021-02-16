@@ -85,10 +85,10 @@ If you need a fast SQL engine that works in memory, that you can integrate now i
 
 The binary is distributed freely.
 
-It is available on S3: 
+It is available on the website: 
 
 ```
-wget https://s3.eu-central-1.amazonaws.com/zeesql.com/releases/latest/zeesql.so -o $HOME/zeesql.so
+wget https://zeesql.com/releases/latest/zeesql.so -o $HOME/zeesql.so
 ```
 
 The URL is stable and provides always the latest released version of `zeeSQL`.
