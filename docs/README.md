@@ -93,6 +93,8 @@ wget https://zeesql.com/releases/latest/zeesql.so -o $HOME/zeesql.so
 
 The URL is stable and provides always the latest released version of `zeeSQL`.
 
+More information on [how to get zeeSQL.](how-to/get-zeesql.md)
+
 ## Loading the module
 
 To use `zeeSQL` you need to load it into your Redis instances.
