@@ -42,6 +42,8 @@ $ redis-cli
 
 If you think that `zeeSQL` can solve some of your problem, please keep reading for more context and details.
 
+Or you can [read the Tutorial](tutorial.md) to get a better overview on how `zeeSQL` works and what it can do for you.
+
 ## What is zeeSQL
 
 `zeeSQL` is a Redis module. 
