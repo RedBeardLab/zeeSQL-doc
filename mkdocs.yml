@@ -6,11 +6,8 @@ google_analytics:
   - auto
 
 pages:
-  -
-    Overview: README.md
-  -
-    Tutorials:
-      - 'Tutorial': tutorial.md
+  - Overview: README.md
+  - Tutorial: tutorial.md
   - References: references.md
         #  -
         #    Pro: pro.md
