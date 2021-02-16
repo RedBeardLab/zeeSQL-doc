@@ -18,6 +18,12 @@ This can be used with `docker`, `podman`, but also in `kubernetes`.
 
 If you are using docker, make sure to expose the port `6379` for `Redis`.
 
+**Example**
+
+```
+docker run -d --name zeesql -p 6379:6379 --rm redbeardlab/zeesql
+```
+
 ## Getting the binary
 
 The second option is to get the `zeeSQL` binary.
