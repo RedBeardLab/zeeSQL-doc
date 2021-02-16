@@ -1,4 +1,4 @@
-# Tutorial for zeeSQL
+# Tutorial
 
 ## Setting up the environment
 
