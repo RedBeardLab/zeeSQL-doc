@@ -9,13 +9,13 @@ This document is your entry point for the documentation and will guide you to wh
 The very first thing is to get the binary.
 
 ```
-wget https://zeesql.com/zeesql.so -o $HOME/zeesql/zeesql.so
+wget https://s3.eu-central-1.amazonaws.com/zeesql.com/releases/latest/zeesql.so -o $HOME/zeesql.so
 ```
 
 Once you got the module you can start a Redis instance loading the module.
 
 ```
-redis-server --loadmodule $HOME/zeesql/zeesql.so
+redis-server --loadmodule $HOME/zeesql.so
 ```
 
 At this point you can start a Redis client to interact with the module.
@@ -65,7 +65,7 @@ So, `zeeSQL` secondary indexes were born.
 Secondary indexes allow getting data from Redis hashes using standard SQL.
 It is possible to look into all your keys and get only the one that have the eg. `score` field set to a number greater than 20.
 
-Similarly, it is possible to do aggregation and smart filtering.
+Similarly, it is possible to do aggregation and filtering.
 
 ## How zeeSQL can help
 
@@ -81,6 +81,41 @@ If you need a fast SQL engine that works in memory, that you can integrate now i
 
 ## Getting the binary
 
-## Getting start
+The binary is distributed freely.
+
+It is available on S3: 
+
+```
+wget https://s3.eu-central-1.amazonaws.com/zeesql.com/releases/latest/zeesql.so -o $HOME/zeesql.so
+```
+
+The URL is stable and provides always the latest released version of `zeeSQL`.
+
+## Loadning the module
+
+To use `zeeSQL` you need to load it into your Redis instances.
+
+After you download the binary, and placed somewhere accessible, you can load the module in different way.
+
+The first way is to pass the module as argument to Redis.
+
+```
+redis-server --loadmodule $HOME/zeesql.so
+```
+
+The second way is to configure Redis to start with the module.
+It is sufficient to add the following line to your `redis.conf` file.
+
+```
+loadmodule $HOME/zeesql.so
+```
+
+The final way is to load the module issuing a command against your Redis instance.
+
+```
+redis-cli MODULE LOAD $HOME/zeesql.so
+```
+
+Each of these three way, if successful, will load `zeeSQL` into Redis making it ready to use.
 
 ## Getting a license
