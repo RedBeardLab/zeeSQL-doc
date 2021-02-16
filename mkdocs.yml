@@ -7,7 +7,7 @@ google_analytics:
 
 pages:
   -
-    Overview: index.md
+    Overview: README.md
   -
     Tutorials:
       - 'Tutorial': tutorial.md
@@ -17,9 +17,8 @@ pages:
         #    Pro: pro.md
         #  -
         #    Motivations: motivations.md
-        #  -
-        #    Pricing: pricing.md
-        #  -
+  -
+    Pricing: pricing.md
         #    Blog:
         #      - 'Release 0.9.0': 'blog/release_0.9.0.md'
         #      - 'Release 0.8.0': 'blog/release_0.8.0.md'

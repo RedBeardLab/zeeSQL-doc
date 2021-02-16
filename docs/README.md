@@ -91,7 +91,7 @@ wget https://s3.eu-central-1.amazonaws.com/zeesql.com/releases/latest/zeesql.so 
 
 The URL is stable and provides always the latest released version of `zeeSQL`.
 
-## Loadning the module
+## Loading the module
 
 To use `zeeSQL` you need to load it into your Redis instances.
 
@@ -119,3 +119,17 @@ redis-cli MODULE LOAD $HOME/zeesql.so
 Each of these three way, if successful, will load `zeeSQL` into Redis making it ready to use.
 
 ## Getting a license
+
+In order to offer a great product, with great documentation and with support, `zeeSQL` must limits its capabilities for free users and let people pay a fair price for what we believe being good software.
+
+Free users can use the product as much as they like and we will provide support to them without any issue.
+But `zeeSQL` will be limited in the amount of databases and secondary indexes that can be created.
+
+Note how the lack of license does not limit the size of your dataset, but only the complexity tha `zeeSQL` manages for you.
+
+In order to remove these limitations, it is possible to [buy a license][license].
+
+More information about the [pricing in the dedicate page](pricing.md).
+
+
+[license]: https://license.zeesql.com
