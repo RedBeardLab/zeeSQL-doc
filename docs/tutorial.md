@@ -1,8 +1,3 @@
----
-title: Tutorial
-description: Tutorial
----
-
 # Tutorial
 
 ### Setting up the environment
