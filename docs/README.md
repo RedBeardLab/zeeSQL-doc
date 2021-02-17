@@ -9,13 +9,13 @@ This document is your entry point for the documentation and will guide you to wh
 The very first thing is to get the binary.
 
 ```
-wget https://zeesql.com/zeesql.so -o $HOME/zeesql/zeesql.so
+wget https://s3.eu-central-1.amazonaws.com/zeesql.com/releases/latest/zeesql.so -o $HOME/zeesql.so
 ```
 
 Once you got the module you can start a Redis instance loading the module.
 
 ```
-redis-server --loadmodule $HOME/zeesql/zeesql.so
+redis-server --loadmodule $HOME/zeesql.so
 ```
 
 At this point you can start a Redis client to interact with the module.
@@ -42,6 +42,8 @@ $ redis-cli
 
 If you think that `zeeSQL` can solve some of your problem, please keep reading for more context and details.
 
+Or you can [read the Tutorial](tutorial.md) to get a better overview on how `zeeSQL` works and what it can do for you.
+
 ## What is zeeSQL
 
 `zeeSQL` is a Redis module. 
@@ -65,7 +67,7 @@ So, `zeeSQL` secondary indexes were born.
 Secondary indexes allow getting data from Redis hashes using standard SQL.
 It is possible to look into all your keys and get only the one that have the eg. `score` field set to a number greater than 20.
 
-Similarly, it is possible to do aggregation and smart filtering.
+Similarly, it is possible to do aggregation and filtering.
 
 ## How zeeSQL can help
 
@@ -81,6 +83,57 @@ If you need a fast SQL engine that works in memory, that you can integrate now i
 
 ## Getting the binary
 
-## Getting start
+The binary is distributed freely.
+
+It is available on the website: 
+
+```
+wget https://zeesql.com/releases/latest/zeesql.so -o $HOME/zeesql.so
+```
+
+The URL is stable and provides always the latest released version of `zeeSQL`.
+
+More information on [how to get zeeSQL.](how-to/get-zeesql.md)
+
+## Loading the module
+
+To use `zeeSQL` you need to load it into your Redis instances.
+
+After you download the binary, and placed somewhere accessible, you can load the module in different way.
+
+The first way is to pass the module as argument to Redis.
+
+```
+redis-server --loadmodule $HOME/zeesql.so
+```
+
+The second way is to configure Redis to start with the module.
+It is sufficient to add the following line to your `redis.conf` file.
+
+```
+loadmodule $HOME/zeesql.so
+```
+
+The final way is to load the module issuing a command against your Redis instance.
+
+```
+redis-cli MODULE LOAD $HOME/zeesql.so
+```
+
+Each of these three way, if successful, will load `zeeSQL` into Redis making it ready to use.
 
 ## Getting a license
+
+In order to offer a great product, with great documentation and with support, `zeeSQL` must limits its capabilities for free users and let people pay a fair price for what we believe being good software.
+
+Free users can use the product as much as they like and we will provide support to them without any issue.
+But `zeeSQL` will be limited in the amount of databases and secondary indexes that can be created.
+
+Note how the lack of license does not limit the size of your dataset, but only the complexity tha `zeeSQL` manages for you.
+
+In order to remove these limitations, it is possible to [buy a license][license].
+
+More information about the [pricing in the dedicate page](pricing.md).
+
+
+[license]: https://license.zeesql.com

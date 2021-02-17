@@ -1,8 +1,8 @@
-# Tutorial for zeeSQL
+# Tutorial
 
 ## Setting up the environment
 
-If you want to start exploring zeeSQL, this tutorial will walk you through the most important commands to know and how to use them.
+This tutorial will walk you through the most important commands of `zeeSQL` and how to use them.
 
 The simplest way to follow this tutorial is to launch an instance of `zeeSQL` using docker.
 
