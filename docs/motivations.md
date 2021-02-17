@@ -39,13 +39,11 @@ Hence, zeeSQL was born.
 
 ## Possible uses
 
-zeeSQL has been thought to be used as an in-memory SQL database, shared between multiple (micro-)services.
+zeeSQL has been thought to be used as an in-memory SQL database, shared between multiple \(micro-\)services.
 
 However, zeeSQL inherits the persistency capabilities of Redis, supporting RDB and AOF, and of SQLite, with the possibility to write directly on disk.
 
 Moreover, it basically never uses the main thread of Redis, hence it will not affect the performance of Redis itself.
 
-This makes zeeSQL a reasonable solution to store and persist data in a small to a medium modern project. 
-
-
+This makes zeeSQL a reasonable solution to store and persist data in a small to a medium modern project.
 

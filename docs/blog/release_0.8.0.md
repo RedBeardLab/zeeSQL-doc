@@ -1,33 +1,24 @@
 # Release 0.8.0 of RediSQL, SQL steroids for Redis
 
-#### RediSQL, Redis on SQL steroids.
+### RediSQL, Redis on SQL steroids.
 
 RediSQL is a Redis module that provides full SQL capabilities to Redis, it is the simplest and fastest way to get an SQL database up and running, without incurring in difficult operational issues and it can scale quite well with your business.
 
 The fastest introduction to RediSQL is [our homepage](https://redisql.com)
 
-**tl;dr** This release introduce two new commands [`REDISQL.QUERY.INTO[.NOW]`][query_into] and [`REDISQL.QUERY_STATEMENT.INTO[.NOW]`][query_statement_into]. 
-The new commands behave similary to `REDISQL.QUERY` and `REDISQL.QUERY_STATEMENT` but they [`XADD`][redis_xadd] the results to a [Redis Stream][redis_streams_intro] passed as first argument.
-
+**tl;dr** This release introduce two new commands [`REDISQL.QUERY.INTO[.NOW]`](../references.md#redisqlqueryinto) and [`REDISQL.QUERY_STATEMENT.INTO[.NOW]`](../references.md#redisqlquery_statementinto). The new commands behave similary to `REDISQL.QUERY` and `REDISQL.QUERY_STATEMENT` but they [`XADD`](https://redis.io/commands/xadd) the results to a [Redis Stream](https://redis.io/topics/streams-intro) passed as first argument.
 
 ## Motivation
 
-Being able to write the result of a query into a stream opens several possibilities.
-First off all allow to easily cache the result of expensive queries.
-Then, it separate the creation of a result with its consuption which is a very important step forward especially for big results.
+Being able to write the result of a query into a stream opens several possibilities. First off all allow to easily cache the result of expensive queries. Then, it separate the creation of a result with its consuption which is a very important step forward especially for big results.
 
-Indeed, while the computation of a query is not done by the main redis thread but it is off-load to another thread to allow redis to keep serving the client. Returning the result must be done in the main Redis thread. 
-Hence a long result can take a lot of time to be returned to the client and in that time Redis cannot serve other requests.
-Writing the result into a stream make it much more efficient use of the main Redis thread time.
+Indeed, while the computation of a query is not done by the main redis thread but it is off-load to another thread to allow redis to keep serving the client. Returning the result must be done in the main Redis thread. Hence a long result can take a lot of time to be returned to the client and in that time Redis cannot serve other requests. Writing the result into a stream make it much more efficient use of the main Redis thread time.
 
 Moreover, on the other side of the network, a small consumer might not expect a big result and could be overlwhelmed by the size.
 
-In standard databases this problem is usually solved using cursors, however Redis itself does not provide this facility.
-Redis provide lists, but they are simply flat list and can store only strings, it would be complex to create the cursors on top of them.
+In standard databases this problem is usually solved using cursors, however Redis itself does not provide this facility. Redis provide lists, but they are simply flat list and can store only strings, it would be complex to create the cursors on top of them.
 
-The streams however are a better fit. While also them can store only strings, they store them into entries, which are small key-values objects.
-Each entry represent a row of our result set.
-Where we encode the column name and type into the key, and we use the value field to store the actual value of the column.
+The streams however are a better fit. While also them can store only strings, they store them into entries, which are small key-values objects. Each entry represent a row of our result set. Where we encode the column name and type into the key, and we use the value field to store the actual value of the column.
 
 An example will be easier to follow.
 
@@ -35,7 +26,7 @@ An example will be easier to follow.
 
 An example of `REDISQL.QUERY.INTO` is the following:
 
-```
+```text
 REDISQL.QUERY.INTO result_stream DB "SELECT foo, bar FROM baz WHERE n > 42"
 ```
 
@@ -43,13 +34,13 @@ The command will execute the query `SELECT foo, bar FROM baz WHERE n > 42` again
 
 If the result is empty, the command will return `["DONE", 0]` to the Redis client.
 
-If the result is not empty, the command will return, to the Redis client, the name of the stream used (hence `result_stream` in this example) along with the first ID added and the last ID added and the size of the cursor (the number of entries added to the stream.)
+If the result is not empty, the command will return, to the Redis client, the name of the stream used \(hence `result_stream` in this example\) along with the first ID added and the last ID added and the size of the cursor \(the number of entries added to the stream.\)
 
 In the following example we start by creating a database, then we create a new table `foo` in the database, and we store 4 rows into the table.
 
 Then we use the new `REDISQL.QUERY.NOW` command to store the result of the query `SELECT * FROM foo` agains the database `DB` in the stream `{DB}:all_foo`.
 
-```
+```text
 127.0.0.1:6379> REDISQL.CREATE_DB DB
 OK
 127.0.0.1:6379> REDISQL.EXEC DB "CREATE TABLE foo(a int, b int);"
@@ -105,8 +96,3 @@ Indeed, both keys, the target stream `{DB}:all_foo` and the source database `DB`
 
 Moreover this schema is also quite nice, allowing with a glance to know what stream refer to what database. But again, it is not necessary at all.
 
-
-[redis_xadd]: https://redis.io/commands/xadd
-[redis_streams_intro]: https://redis.io/topics/streams-intro
-[query_into]: ../references.md#redisqlqueryinto
-[query_statement_into]: ../references.md#redisqlquery_statementinto

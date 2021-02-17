@@ -4,7 +4,7 @@ zeeSQL use a credit system.
 
 In `zeeSQL` there are two main concepts, `database`s and `secondary indexe`s.
 
-Running either one (database or one secondary index) cost 1 credit every hour.
+Running either one \(database or one secondary index\) cost 1 credit every hour.
 
 One credit costs 0,01€
 
@@ -17,15 +17,15 @@ We device this pricing schema to scale on the **complexity** that zeeSQL is mana
 ## Example
 
 | Number of databases | Numbre of indexes | Credit usage | Cost per hour | Cost per month |
-|---------------------|-------------------|--------------|---------------|----------------|
-| 1                   |                  0|        1     |       FREE    |      FREE      |
-| 3                   |                  0|        3     |       FREE    |      FREE      |
-| 4                   |                  0|        4     |       0.01    |       7.20     |
-| 5                   |                  0|        5     |       0.02    |      14.40     |
-| 1                   |                  2|        3     |       FREE    |      FREE      |
-| 1                   |                  3|        4     |       0.01    |       7.20     |
-| 2                   |                  3|        5     |       0.02    |      14.40     |
-| 2                   |                  4|        6     |       0.03    |      21.60     |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | 0 | 1 | FREE | FREE |
+| 3 | 0 | 3 | FREE | FREE |
+| 4 | 0 | 4 | 0.01 | 7.20 |
+| 5 | 0 | 5 | 0.02 | 14.40 |
+| 1 | 2 | 3 | FREE | FREE |
+| 1 | 3 | 4 | 0.01 | 7.20 |
+| 2 | 3 | 5 | 0.02 | 14.40 |
+| 2 | 4 | 6 | 0.03 | 21.60 |
 
 In case of replication, each replica get 3 free credits.
 

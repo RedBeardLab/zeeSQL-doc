@@ -1,14 +1,12 @@
 # Release 0.5.0 of RediSQL, SQL steroids for Redis
 
-#### RediSQL, Redis on SQL steroids.
+### RediSQL, Redis on SQL steroids.
 
 RediSQL is a Redis module that provides full SQL capabilities to Redis, it is the simplest and fastest way to get an SQL database up and running, without incurring in difficult operational issues and it can scale quite well with your business.
 
 The fastest introduction to RediSQL is [our homepage](https://redisql.com)
 
-**tl;dr;** This release does not introduce any new features but it does improve the performances significantly. 
-Moreover, we are releasing for multiple platforms, notably for ARMv7 (Rasberry PI), for CentOS7 (Linux AMI on AWS) and of course for Linux generic. 
-Finally, we introduce also the TRIAL executable which can be freely downloaded and used, it provides all the functionality of the PRO version but it is limited for evaluation purposes, after ~2 hours it will shut down itself.
+**tl;dr;** This release does not introduce any new features but it does improve the performances significantly. Moreover, we are releasing for multiple platforms, notably for ARMv7 \(Rasberry PI\), for CentOS7 \(Linux AMI on AWS\) and of course for Linux generic. Finally, we introduce also the TRIAL executable which can be freely downloaded and used, it provides all the functionality of the PRO version but it is limited for evaluation purposes, after ~2 hours it will shut down itself.
 
 ## Performance Improvement ~20%
 
@@ -28,8 +26,7 @@ The increase in throughput is driven by the switch to a zero-copy architecture.
 
 In Rust, the language in which RediSQL is written is usual to start dealing with lifetime issues simply by copying memory, this, of course, comes with a penalty in performances.
 
-However, as long as this performance penalty is not an issue is better to just leave as it is and work on the more important parts of the project.
-For one of our user it was a problem and so we decide to fix it by bringing performance improvements to all. [More about this story here.][performance]
+However, as long as this performance penalty is not an issue is better to just leave as it is and work on the more important parts of the project. For one of our user it was a problem and so we decide to fix it by bringing performance improvements to all. [More about this story here.](performances.md)
 
 ## Releases
 
@@ -43,7 +40,7 @@ Unfortunately is some machine `libc` is present in an older version that the one
 
 Very old systems have this issues as well as CentOS 7 and the Linux AMI on AWS.
 
-Unfortunately, cross-compile for a different version of glibc is not as simple as it may seem, but we finally manage :)
+Unfortunately, cross-compile for a different version of glibc is not as simple as it may seem, but we finally manage :\)
 
 ## Trial
 
@@ -59,11 +56,7 @@ Clearly, the TRIAL version is not supposed to be used in production.
 
 ## End
 
-As always you can find all the public releases on the [github page][releases], you can openly access the same public release on the [open page of our shop][plaso_open] or you can buy the complete PRO package [signing up in the shop][plaso_signup].
+As always you can find all the public releases on the [github page](https://github.com/RedBeardLab/rediSQL/releases/tag/v0.5.0), you can openly access the same public release on the [open page of our shop](https://plasso.com/s/epp4GbsJdp-redisql/) or you can buy the complete PRO package [signing up in the shop](https://plasso.com/s/epp4GbsJdp-redisql/signup/).
 
 Remember that signing up for the PRO product also provide you free support from us, the creator of the project, so that we can point you to the right direction and suggest the best use cases for our product.
 
-[releases]: https://github.com/RedBeardLab/rediSQL/releases/tag/v0.5.0
-[plaso_open]: https://plasso.com/s/epp4GbsJdp-redisql/
-[plaso_signup]: https://plasso.com/s/epp4GbsJdp-redisql/signup/
-[performance]: performances.md

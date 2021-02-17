@@ -1,14 +1,12 @@
 # Release 0.9.0 of RediSQL, SQL steroids for Redis
 
-#### RediSQL, Redis on SQL steroids.
+### RediSQL, Redis on SQL steroids.
 
 RediSQL is a Redis module that provides full SQL capabilities to Redis, it is the simplest and fastest way to get an SQL database up and running, without incurring in difficult operational issues and it can scale quite well with your business.
 
 The fastest introduction to RediSQL is [our homepage](https://redisql.com)
 
-**tl;dr** This release introduce one simple new command `REDISQL.STATISTICS`.
-The new command returns the amount of time each command is been called and how many of those calls were successfully and how many returned errors.
-The command does not introduce noticeable slowdowns.
+**tl;dr** This release introduce one simple new command `REDISQL.STATISTICS`. The new command returns the amount of time each command is been called and how many of those calls were successfully and how many returned errors. The command does not introduce noticeable slowdowns.
 
 This release is the smallest, however it provide the foundation for the next major releases.
 
@@ -24,7 +22,7 @@ Just invoke the command without any arguments to get an array of all the counter
 
 After using RediSQL for few commands, the output of `REDISQL.STATISTICS` could be the following.
 
-```
+```text
 127.0.0.1:6379> REDISQL.STATISTICS
  1) 1) "CREATE_DB"
     2) (integer) 1
@@ -98,21 +96,21 @@ The `CERATE_DB` line means that the `REDISQL.CREATE_DB` command is been invoked 
 
 Let's analyze the `CREATE_STATEMENT` lines as well.
 
-```
+```text
 13) 1) "CREATE_STATEMENT"
     2) (integer) 3
 ```
 
 This line says that the command is been invoked 3 times.
 
-```
+```text
 14) 1) "CREATE_STATEMENT OK"
     2) (integer) 1
 ```
 
 The next line specify that the commands completed successfully 1 time out of 3.
 
-```
+```text
 15) 1) "CREATE_STATEMENT ERR"
     2) (integer) 2
 ```
@@ -126,3 +124,4 @@ Of course the math need to check out and the sum of successful and erroneous run
 This command is implemented with atomic counters, they are fast and provide a simple and easy way to manage concurrent access.
 
 We careful tested the performance to make sure that the slowdown introduces by the counter is not noticeable.
+

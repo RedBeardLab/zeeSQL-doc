@@ -10,15 +10,11 @@ Between the choice of abbandoning the project and monetize it in a not open-sour
 
 Being a closed source project, tht people pay real money for it, comes with a series of advantages.
 
-Having the main developer of the project keep working on it, enhancing, and writing documentation for it, is invaluable.
-It is much more likely that the documentation will be of high quality. 
-There is a clear incentive in having a well documented and easy to use project.
+Having the main developer of the project keep working on it, enhancing, and writing documentation for it, is invaluable. It is much more likely that the documentation will be of high quality. There is a clear incentive in having a well documented and easy to use project.
 
-(This is not always the case for projects that sell supports, nor it is always the case for project that sell computing resources.)
+\(This is not always the case for projects that sell supports, nor it is always the case for project that sell computing resources.\)
 
-Also, the possibilities that the project get abbandoned in the foreseable futures are extremely slim.
-It is a source of income for the author who has all the incentives to keep expading it.
-
+Also, the possibilities that the project get abbandoned in the foreseable futures are extremely slim. It is a source of income for the author who has all the incentives to keep expading it.
 
 ## Disadvantages
 
@@ -31,6 +27,4 @@ Another disadvantage of a closed source project is that it won't be possible for
 This is not a problem, as long as RedBeardLab is around and keep working on zeeSQL, but it could be a real problem in the next 5 or 10 years.
 
 To avoid this problem, we pledge to release the source code of zeeSQL as soon as we are unable to support it anymore.
-
-
 

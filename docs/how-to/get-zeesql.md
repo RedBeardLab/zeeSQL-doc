@@ -20,7 +20,7 @@ If you are using docker, make sure to expose the port `6379` for `Redis`.
 
 **Example**
 
-```
+```text
 docker run -d --name zeesql -p 6379:6379 --rm redbeardlab/zeesql
 ```
 
@@ -28,16 +28,17 @@ docker run -d --name zeesql -p 6379:6379 --rm redbeardlab/zeesql
 
 The second option is to get the `zeeSQL` binary.
 
-The binary is rather small, ~10MB, and it can be downloaded from: 
+The binary is rather small, ~10MB, and it can be downloaded from:
 
-```
+```text
 https://zeesql.com/releases/latest/zeesql.so
 ```
 
 A simple way to get the binary is:
 
-```
+```text
 wget https://zeesql.com/releases/latest/zeesql.so
 ```
 
 The binary can be distributed in whichever way you like, so you can push it in your private docker image, or send it to customers.
+

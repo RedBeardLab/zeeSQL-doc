@@ -1,6 +1,6 @@
 # RediSQL for analytics
 
-RediSQL is a module for Redis that embed a completely functional SQLite database. 
+RediSQL is a module for Redis that embed a completely functional SQLite database.
 
 RediSQL enables new paradigm where is possible to have several smaller decentralized databases instead of a single giant one.
 
@@ -24,16 +24,13 @@ However, you would prefer to avoid to put too much pressure on your main databas
 
 One of the advantages of using SQL is the possibility to use and declare the shape of your data.
 
-For this specific problem, our data are quite simple.
-We want to store a user identifier (it may be its alias, nickname, ID in the main database or even something else), the IP address of the user, the timestamp when the event was triggered and finally the event itself.
+For this specific problem, our data are quite simple. We want to store a user identifier \(it may be its alias, nickname, ID in the main database or even something else\), the IP address of the user, the timestamp when the event was triggered and finally the event itself.
 
-We are going to represent the identifier, the IP address and the timestamp as strings.
-Yes, unfortunately, SQLite does not provide a time type, to use a string is quite a reasonable choice, another one could be to use integers and to save the timestamp as Unix epoch of the event.
+We are going to represent the identifier, the IP address and the timestamp as strings. Yes, unfortunately, SQLite does not provide a time type, to use a string is quite a reasonable choice, another one could be to use integers and to save the timestamp as Unix epoch of the event.
 
 ### Events
 
-Representing the events may be a little complex and it really depends on your use case.
-Suppose you are just listening to specific events like "Sales", "Register", "Login" or "Submit form" you could simply store them as strings.
+Representing the events may be a little complex and it really depends on your use case. Suppose you are just listening to specific events like "Sales", "Register", "Login" or "Submit form" you could simply store them as strings.
 
 However you can be a little more sophisticated as well, and associate to every Sales some other data like "amount", "shipping cost" or "total elements sold" or again improve the "Submit form" with information about the web page, like the URL of the page or if it was the A or the B version of your A/B test. And so on and so forth.
 
@@ -43,7 +40,7 @@ If your events are quite static and you already know what you are going to store
 
 An idea could be to use this representation for the table `Events`:
 
-``` SQL
+```sql
 | event_id | user_id | ip_address | timestamp |
 |----------|---------|------------|-----------|
 ```
@@ -52,14 +49,14 @@ And then different tables for each type of events, like:
 
 `Sales`:
 
-``` SQL
+```sql
 | event_id | amount  | shipping_cost | total_elements_sold |
 |----------|---------|---------------|---------------------|
 ```
 
 `Submits`:
 
-``` SQL
+```sql
 | event_id | url_page | A/B_version |
 |----------|----------|-------------|
 ```
@@ -72,7 +69,7 @@ A different approach will be to store directly JSON in your table.
 
 The new schema will be only a single table, `Events`:
 
-``` SQL
+```sql
 | event_id | user_id | ip_address | timestamp | data |
 |----------|---------|------------|-----------|------|
 ```
@@ -87,7 +84,7 @@ Using JSON you gain a lot of flexibility but you are not sure anymore of the sha
 
 In this section we are going to get through a possible implementation of the above solution, we are going to use the JSON variant since I believe that not everybody knew that SQLite could handle JSON so well.
 
-I am assuming you already know how to get a Redis instance and how to load a module into it, if not make sure to check out [the readme of the project][set_up]
+I am assuming you already know how to get a Redis instance and how to load a module into it, if not make sure to check out [the readme of the project](https://github.com/RedBeardLab/rediSQL#getting-start)
 
 We are going to automate as much as possible in this tutorial, in this way your analytic script will just run.
 
@@ -140,7 +137,7 @@ done = r.execute_command("REDISQL.EXEC", "DB", statement)
 assert done == ["DONE", 1]
 ```
 
-As you may have guessed already the return value of `REDISQL.EXEC` is a list of two elements, the string `DONE` and the integer representing the number of rows modified (inserted, deleted or updated).
+As you may have guessed already the return value of `REDISQL.EXEC` is a list of two elements, the string `DONE` and the integer representing the number of rows modified \(inserted, deleted or updated\).
 
 However, this way of inserting data into the database is not optimal, especially if the same operation will be performed several times. And also because it is vulnerable to SQL injections attacks.
 
@@ -181,15 +178,15 @@ The ones that follow are plain SQL statements that you can execute `REDISQL.EXEC
 
 The most interesting function provide is `json_extract`.
 
-``` SQL
+```sql
 SELECT user_id, json_extract(data, '$.total')
 FROM Events
 WHERE json_extract(data, '$.type') = "sales";
 ```
 
-This query will look inside the field `type` of the JSON stored into the columns `data` if this fields contains the string "sales" it will return the user who bought something and total of the sale. 
+This query will look inside the field `type` of the JSON stored into the columns `data` if this fields contains the string "sales" it will return the user who bought something and total of the sale.
 
-`json_extract` works also on array using a simple syntax: `$.array[2]` (eg. extract the third element of the array)
+`json_extract` works also on array using a simple syntax: `$.array[2]` \(eg. extract the third element of the array\)
 
 ## Move the data
 
@@ -197,12 +194,12 @@ Running the above script will be extremely fast, I am talking about 10ks inserts
 
 However, it is so fast for a variety of reason but maybe the most important is that it keeps all the data in memory and does not write them on disk.
 
-This can be just fine for some application (think about storing data that become useless in few days time) or it can be a big issue for some other use case, luckily there is a very simple solution.
+This can be just fine for some application \(think about storing data that become useless in few days time\) or it can be a big issue for some other use case, luckily there is a very simple solution.
 
 The simplest thing to do when you decide to dump the data in your persistent storage is just to query them all and push them, in batch, to your persistent system. Moving the data in all together will allow having an extremely high throughput and it will take a fraction of the time than if you moved just a row at the time.
 
 A quite simple practice is to simply dump all the content of your database in a CSV file and then let your RDBMS load it.
- 
+
 This operation is quite simple and it can be done like so.
 
 ```python
@@ -231,7 +228,3 @@ Adding this tool to your existing infrastructure should be quite simple and pain
 
 Is worth to remember that RediSQL already provide RDB persistency so you already have some interesting level of safeness embed into this architecture.
 
-
-[redis_download]: https://redis.io/download
-[redisql_download]: https://github.com/RedBeardLab/rediSQL/releases
-[set_up]: https://github.com/RedBeardLab/rediSQL#getting-start
