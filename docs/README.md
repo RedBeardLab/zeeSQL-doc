@@ -9,7 +9,7 @@ This document is your entry point for the documentation and will guide you to wh
 The very first thing is to get the binary.
 
 ```text
-wget https://s3.eu-central-1.amazonaws.com/zeesql.com/releases/latest/zeesql.so -o $HOME/zeesql.so
+wget https://zeesql.com/releases/latest/zeesql.so -o $HOME/zeesql.so
 ```
 
 Once you got the module you can start a Redis instance loading the module.
