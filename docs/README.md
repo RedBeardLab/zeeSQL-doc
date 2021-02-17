@@ -31,7 +31,7 @@ $ redis-cli
 > ZEESQL.EXEC DB COMMAND "SELECT * FROM users;"
 ```
 
-`zeeSQL` allow to search Redis hashes by values, making much simpler to express complex queries.
+`zeeSQL` allows searching Redis hashes by values, making much simpler to express complex queries.
 
 ```
 > ZEESQL.INDEX DB NEW PREFIX products:* TABLE products SCHEMA id INT price INT name STRING
