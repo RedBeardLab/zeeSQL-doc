@@ -33,11 +33,15 @@ This is enforced by avoiding creating a new database or a new index if you are a
 
 To spend more than 3 credits for an hour, you need to input a valid license key.
 
+The 2160 free credit, are there to allow users to input a valid license while still benefit from the free plan.
+
 ```
 3 credits each hours * 24 hours a day * 30 days a months = 2160 credit / month.
 ```
 
 Which is exactly the amount of free credit available.
+
+This will allow to test the system and do maintenance operations.
 
 The 2160 credit/month can be spent also together during a single hour.
 This allows testing the product with multiple databases and secondary indexes.
