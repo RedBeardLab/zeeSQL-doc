@@ -2,7 +2,11 @@
 
 This document explains all the API that zeeSQL provide to the users.
 
-This document refers to the latest API, but we commit to backward-compatible API.
+`zeeSQL` is a Redis module, the command illustrate below are added **on top** of all the existing Redis commands.
+Using `zeeSQL` means using Redis at the same time.
+You can use any Redis client, in any programming language, even the `redis-cli`, to send the `zeeSQL` commands.
+
+This document refers to the latest API, but `zeeSQL` commits to backward-compatible API.
 
 For each command, it exposes first the name and then the syntax, and finally a brief explanation of what is going on inside the code.
 
