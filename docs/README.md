@@ -1,4 +1,4 @@
-# zeeSQL, SQL and search by value fore Redis. Fast, Simple and Reliable.
+# zeeSQL, SQL and search by value for Redis. Fast, Simple and Reliable.
 
 This is a short introduction to zeeSQL, a Redis modules that brings SQL capabilities into Redis.
 
