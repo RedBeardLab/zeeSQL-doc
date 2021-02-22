@@ -1,18 +1,18 @@
-# zeeSQL and secondary indexes, how to search Redis key by value
+\# zeeSQL and secondary indexes, how to search Redis key by value
 
 Redis, at his heart, is a key-value store.
-It makes simple, easy and fast to search for values given their keys.
+It makes it simple, easy, and fast to search for values given their keys.
 
-Often time, however, is necessary to look for keys which value respect some properties.
+Often time, however, is necessary to look for keys that values respect some properties.
 
-For instance find all the keys for which their value is greater than 5.
+For instance, find all the keys for which their value is greater than 5.
 Or the keys that have a value set to a specific string like "admin".
 
 The standard solution for this problem in Redis is to keep a set of secondary indexes.
 To keep everything in sync, those secondary indexes need to be updated along with the primary keys.
-Keeping the indexes in sync, is an activity that the developer who use Redis need to take care of, and it brings a sizable increment in complexity.
+Keeping the indexes in sync is an activity that the developer who uses Redis need to take care of, and it brings a sizable increment in complexity.
 
-zeeSQL aim to solve this problem.
+zeeSQL aims to solve this problem.
 
 ## Redis Hashes
 
@@ -30,9 +30,9 @@ HGETALL user:1000
 
 In this case to the Redis key `user:1000` we associate a Redis Hash.
 
-The Redis Hash has 3 fields, `username` with value `antirez`, `password` with value `P1pp0` and `age` with value 34.
+The Redis Hash has 3 fields, `username` with value `antirez`, `password` with value `P1pp0`, and `age` with value 34.
 
-Redis Hashes are the only data-structure that can be indexes using zeeSQL.
+Redis Hashes are the only data structure that can be indexed using zeeSQL.
 
 At the moment, zeeSQL we can index only Redis Hashes.
 
@@ -40,9 +40,9 @@ At the moment, zeeSQL we can index only Redis Hashes.
 
 Secondary indexes in zeeSQL are standard SQL tables.
 
-The user need to provide the schema of the table, and zeeSQL will automatically keep the table in sync with the Redis Hashes.
+The user needs to provide the schema of the table, and zeeSQL will automatically keep the table in sync with the Redis Hashes.
 
-The user can also provide a prefix, so that only some Redis Hashes are stored in the secondary index.
+The user can also provide a prefix so that only some Redis Hashes, the ones that match the prefix, are stored in the secondary index.
 
 A secondary table can be created using the [`ZEESQL.INDEX` command](references.md#zeesql-index-new).
 
@@ -50,16 +50,16 @@ A secondary table can be created using the [`ZEESQL.INDEX` command](references.m
 > ZEESQL.INDEX DB NEW TABLE $table_name [PREFIX prefix] SCHEMA column_name column_type [column_name column_type] 
 ```
 
-This command will performe two actions.
+This command will perform two actions.
 
-At first it will try to create a table called `$table_name`. If the table already exists, this step is skipped.
+At first, it will try to create a table called `$table_name`. If the table already exists, this step is skipped.
 If the table does not exists, the new table is created with the columns indicated after the `SCHEMA` keyword.
 
 After the table is created, we register a callback.
 
-The callback, listen to all the events that happens to the keys that start with the prefix, if the prefix is ommited, the callback listen to events for all the keys.
+The callback, listen to all the events that happen to the keys that start with the prefix, if the prefix is omitted, the callback listen to events for all the keys.
 
-The callback is invoked passing as argument the type of event and against which key the event was fired.
+The callback is invoked passing as arguments the type of event and against which key the event was fired.
 From there, the callback has all the information it needs to keep the secondary index table in sync.
 
 Every time that one key, matching the prefix is modified, zeeSQL updates the secondary index table.
@@ -75,13 +75,13 @@ Next to the primary key, there are all the columns defined in the schema, with t
 
 ## It is JUST A TABLE
 
-The secondary index table, it is a standard SQLite table.
+The secondary index table is a standard SQLite table.
 
-There is nothing special about it, beside being managed by zeeSQL itself and not by the user.
+There is nothing special about it, besides being managed by zeeSQL itself and not by the user.
 
-You can, of-course, query it, in whichever way you find more appropriate.
+You can, of course, query it, in whichever way you find more appropriate.
 
-However you could also modify it, even thought it is stronggly discouraged.
+However, you could also modify it, even though it is strongly discouraged.
 
 Being a standard SQLite table, it is possible to define indexes also on your secondary index table.
 This will allow even faster lookups.
@@ -92,19 +92,19 @@ Moreover, it is also possible to define triggers.
 
 The commands to modify the secondary index tables, are fire and forget.
 
-The works seemslessy on a standard table without constraints.
-However if you start to add constraints and trigger to the secondary index table, it will be your responsability to keep the database in a consistent state.
+The works seamlessly on a standard table without constraints.
+However, if you start to add constraints and triggers to the secondary index table, it will be your responsibility to keep the database in a consistent state.
 
-Unfortunately zeeSQL cannot provide any feedback, if an update or insertion failed.
+Unfortunately, zeeSQL cannot provide any feedback, if an update or insertion failed.
 
-The uses cases when this could be a problem, are extremelly advanceds.
+The use cases when this could be a problem, are extremely advanced.
 
 ## An Example
 
 In our Redis we can store users for a simple online game.
-Of those users we store a simple ID, the name and the score.
+Of those users we store a simple ID, the name, and the score.
 
-We want to search for all the user who score is greater than 5.
+We want to search for all the user who scores is greater than 5.
 
 We start by creating a zeeSQL database.
 
@@ -123,18 +123,18 @@ OK
 127.0.0.1:6379> HMSET user:105 id 105 name baz score 4
 ```
 
-We have created 3 users, each with its own name, id and score.
+We have created 3 users, each with its own name, id, and score.
 
-At this point we can create a secondary index.
+At this point, we can create a secondary index.
 
 ```
 127.0.0.1:6379> ZEESQL.INDEX DB NEW PREFIX user:* TABLE users SCHEMA id INT name STRING score INT
 OK
 ```
 
-At this point we have created the secondary index table.
+Now we have created the secondary index table.
 
-We can visualize what table was created:
+We can visualize what table was created by querying the `sqlite_master` special table.
 
 ```
 127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "select * from sqlite_master;"
@@ -155,8 +155,6 @@ We can visualize what table was created:
    4) (integer) 3
    5) "CREATE TABLE users(key PRIMARY KEY, id INT, name STRING, score INT)"
 ```
-
-We can see the SQL table created querying the `sqlite_master` special table.
 
 Exactly what we would expect, the `key` column as primary key, where we will store the key of the Redis Hash, and then the schema we asked for.
 
@@ -220,7 +218,7 @@ OK
    4) (integer) 2
 ```
 
-Similarly, if an user is updated, the table will reflect the new status of the Redis Hash.
+Similarly, if a user is updated, the table will reflect the new status of the Redis Hash.
 
 ```
 127.0.0.1:6379> HSET user:109 score 5
@@ -273,9 +271,9 @@ But we can use zeeSQL for something more.
 
 For instance, maybe we want to give a rank to our users.
 
-Users between grade 0 and 5 will be "novice" and user above will be expert.
+Users with a score between 0 and 5 will be "novice" and users with a score above it will be expert.
 
-An easy way to achieve this, would be to create a view on top of the `users` tables.
+An easy way to achieve this would be to create a view on top of the `users` tables.
 
 ```
 127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "create view ranked_users AS select id, name, score, case  when score < 5 then 'novice' else 'expert' end as rank from users;"
@@ -301,7 +299,7 @@ An easy way to achieve this, would be to create a view on top of the `users` tab
    4) "expert"
 ```
 
-If the user with ID 100, gains few more point, he will become an expert as well.
+If the user with ID 100, gains a few more points, he will become an expert as well.
 
 Using views on top of secondary indexes, we only need to care about the user score, not about the rank.
 Using plain Redis we would need to keep track also of the rank ourselves.
@@ -333,7 +331,7 @@ If our game gains a lot of users some queries could become slow.
 
 On top of the secondary index table, it is possible to add SQLite indexes.
 
-For instance we might want to know how many users have a particular score.
+For instance, we might want to know how many users have a particular score.
 If there are a lot of users, this query might be slow.
 
 ```
@@ -379,10 +377,10 @@ We can do better defining an index:
 
 ## Conclusion
 
-In thi article we show how to use secondary indexes in zeeSQL.
+In this article, we show how to use secondary indexes in zeeSQL.
 
-They are very powerful and useful when you are simplifing your own queries against Redis Hashes.
-Moreover, they allow you to think only about the main data, it is the query engine that find the best way to query your data for you.
+They are very powerful and useful when you are simplifying your queries against Redis Hashes.
+Moreover, they allow you to think only about the main data, it is the query engine that finds the best way to query your data for you.
 
-The important take away from this article should be that the table create as zeeSQL secondary indexes, are just standard table.
-As such, those tables, can be manipulated in whichever way the application developer find more opportune.
+The important takeaway from this article should be that the table creates as zeeSQL secondary indexes are just standard tables.
+As such, those tables can be manipulated in whichever way the application developer finds more opportune.
