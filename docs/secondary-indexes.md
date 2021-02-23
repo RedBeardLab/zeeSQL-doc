@@ -1,4 +1,4 @@
-\# zeeSQL and secondary indexes, how to search Redis key by value
+# zeeSQL and secondary indexes, how to search Redis key by value
 
 Redis, at his heart, is a key-value store.
 It makes it simple, easy, and fast to search for values given their keys.
