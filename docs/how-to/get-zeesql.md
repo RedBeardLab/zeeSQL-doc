@@ -42,3 +42,10 @@ wget https://zeesql.com/releases/latest/zeesql.so
 
 The binary can be distributed in whichever way you like, so you can push it in your private docker image, or send it to customers.
 
+## About zeeSQL
+
+zeeSQL is a Redis Module that provides SQL capabilities to Redis.
+It allows the creation and management of several SQL databases, each one independent from the other.
+Moreover, zeeSQL provides out-of-the-box [secondary indexes](../secondary-indexes.md) capabilities, allowing fast and easy search by value in Redis.
+
+
