@@ -6,7 +6,7 @@ zeeSQL can also returns the exact same information as JSON output.
 
 JSON output may be preferable since it is usually easier to parse and all languages offer full support for it.
 
-The [`ZEESQL.EXEC`][exec] and [`ZEESQL.QUERY`][query] commands support the `JSON` flag, which instructs them to return JSON as output.
+The [`ZEESQL.EXEC`][exec] and [`ZEESQL.QUERY`][query] commands support the [`JSON`][json] flag, which instructs them to return JSON as output.
 
 ## Examples
 
