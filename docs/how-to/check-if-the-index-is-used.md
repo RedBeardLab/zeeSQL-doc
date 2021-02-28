@@ -32,3 +32,187 @@ When no index can be used to speed up a query, SQLite will fallback in a full ta
 For big tables, this implies an higher latency and slower results.
 
 ## Am I using some index?
+
+SQLite, and so zeeSQL, comes with an handy command to check what the SQL engine is going to do, in other to retrieve the data.
+
+`EXPLAIN QUERY PLAN $your_query` returns an human readable representation of what the SQL engine is going to do to fetch the data.
+
+An example will help clarify, suppose we have two tables, `foo` and `bar`.
+
+```
+127.0.0.1:6379> ZEESQL.CREATE_DB DB
+1) 1) "OK"
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "create table foo(a int, b int, c int);"
+1) 1) "DONE"
+2) 1) (integer) 0
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "create table bar(x int, y int, z int);"
+1) 1) "DONE"
+2) 1) (integer) 0
+```
+
+At this point we don't have any indexes, so any query will go through a full table scan.
+
+```
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "EXPLAIN QUERY PLAN select a from foo where a = 3 and b = 4 and c = 5;" NO_HEADER
+1) 1) "RESULT"
+2) 1) (integer) 2
+   2) (integer) 0
+   3) (integer) 0
+   4) "SCAN TABLE foo"
+```
+
+In this example, were are scanning the whole `foo` table.
+
+Adding a simple index to the `foo` table will help SQLite in searching more efficientely the table.
+
+```
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "CREATE INDEX foo_a on foo(a);" NO_HEADER
+1) 1) "DONE"
+2) 1) (integer) 0
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "EXPLAIN QUERY PLAN select a from foo where a = 3 and b = 4 and c = 5;" NO_HEADER
+1) 1) "RESULT"
+2) 1) (integer) 3
+   2) (integer) 0
+   3) (integer) 0
+   4) "SEARCH TABLE foo USING INDEX foo_a (a=?)"
+```
+
+This works also when you are working with multiple tables.
+
+```
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "EXPLAIN QUERY PLAN select a from foo, bar where a = 3 and b = 4 and c = 5 and c = z;" NO_HEADER
+1) 1) "RESULT"
+2) 1) (integer) 4
+   2) (integer) 0
+   3) (integer) 0
+   4) "SCAN TABLE bar"
+3) 1) (integer) 10
+   2) (integer) 0
+   3) (integer) 0
+   4) "SEARCH TABLE foo USING INDEX foo_a (a=?)"
+```
+
+On `foo`, we have the index we created previously that simplify the search, in bar we don't have any index, so we are forced to do a full table scan.
+
+As soon as we add an index:
+
+```
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "CREATE INDEX bar_z on bar(z);" NO_HEADER
+1) 1) "DONE"
+2) 1) (integer) 0
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "EXPLAIN QUERY PLAN select a from foo, bar where a = 3 and b = 4 and c = 5 and c = z;" NO_HEADER
+1) 1) "RESULT"
+2) 1) (integer) 4
+   2) (integer) 0
+   3) (integer) 0
+   4) "SEARCH TABLE foo USING INDEX foo_a (a=?)"
+3) 1) (integer) 13
+   2) (integer) 0
+   3) (integer) 0
+   4) "SEARCH TABLE bar USING COVERING INDEX bar_z (z=?)"
+```
+
+Now search on both table are using an index.
+
+A details, on `bar` we are using a `COVERING INDEX` instead of a standard index.
+
+A standard index makes faster to lookup the id of the rows that we are interested in, but then we still need to fetch those rows from the database.
+A covering index, means that you are not going to fetch extra rows, because all the data you care about are already stored in the index itself.
+Note that in the query above we don't ask for any columns from the `bar` table in the result set.
+
+## Composite indexes
+
+Indexes can be against a single column or against multiple columns.
+
+The more the index is specific, the faster will be your query.
+
+```
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "CREATE INDEX foo_b_c on foo(b, c);" NO_HEADER
+1) 1) "DONE"
+2) 1) (integer) 0
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "EXPLAIN QUERY PLAN select a from foo where a = 3 and b = 4 and c = 5;" NO_HEADER
+1) 1) "RESULT"
+2) 1) (integer) 3
+   2) (integer) 0
+   3) (integer) 0
+   4) "SEARCH TABLE foo USING INDEX foo_b_c (b=? AND c=?)"
+```
+
+In this case, instead of using the index `foo_a` the SQLite engine prefer the one on both `b` and `c` columns.
+
+It is important to be careful between `AND` and `OR` conditions.
+
+```
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "EXPLAIN QUERY PLAN select a from foo where a = 3 OR b = 4 and c = 5;" NO_HEADER                                                     1) 1) "RESULT"
+2) 1) (integer) 4
+   2) (integer) 0
+   3) (integer) 0
+   4) "MULTI-INDEX OR"
+3) 1) (integer) 10
+   2) (integer) 4
+   3) (integer) 0
+   4) "SEARCH TABLE foo USING INDEX foo_a (a=?)"
+4) 1) (integer) 21
+   2) (integer) 4
+   3) (integer) 0
+   4) "SEARCH TABLE foo USING INDEX foo_b_c (b=? AND c=?)"
+```
+
+The query seems basically the same, but instead of an `AND` we have an `OR`, in this case one more search is necessary.
+
+If they were all `OR`, then a full table scan is almost guarantee, unless you don't have a separated index for each column in the table.
+
+```
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "EXPLAIN QUERY PLAN select a from foo where a = 3 OR b = 4 OR c = 5;" NO_HEADER
+1) 1) "RESULT"
+2) 1) (integer) 2
+   2) (integer) 0
+   3) (integer) 0
+   4) "SCAN TABLE foo"
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "CREATE INDEX foo_b on foo(b);" NO_HEADER
+1) 1) "DONE"
+2) 1) (integer) 0
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "CREATE INDEX foo_c on foo(c);" NO_HEADER
+1) 1) "DONE"
+2) 1) (integer) 0
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "EXPLAIN QUERY PLAN select a from foo where a = 3 OR b = 4 OR c = 5;" NO_HEADER
+1) 1) "RESULT"
+2) 1) (integer) 4
+   2) (integer) 0
+   3) (integer) 0
+   4) "MULTI-INDEX OR"
+3) 1) (integer) 10
+   2) (integer) 4
+   3) (integer) 0
+   4) "SEARCH TABLE foo USING COVERING INDEX foo_a_b_c (a=?)"
+4) 1) (integer) 20
+   2) (integer) 4
+   3) (integer) 0
+   4) "SEARCH TABLE foo USING INDEX foo_b (b=?)"
+5) 1) (integer) 30
+   2) (integer) 4
+   3) (integer) 0
+   4) "SEARCH TABLE foo USING INDEX foo_c (c=?)"
+```
+
+## End
+
+Indexes are fundamental for every database system, however they might be confusing and not intuitive.
+
+zeeSQL, and SQLite, provide a very simple way to check what indexes are going to be used for each of your query, and when in doubt, it is a good idea to check it.
+
+Do not add too many indexes, they slow down insertion.
+Moreover, in small datasets, a full table scan can be fast enough.
+
+Always verify your assumption about indexes.
+
+## About zeeSQL
+
+zeeSQL is a Redis Module that provides SQL capabilities to Redis.
+It allows the creation and management of several SQL databases, each one independent from the other.
+Moreover, zeeSQL provides out-of-the-box [secondary indexes](../secondary-indexes.md) capabilities, allowing fast and easy search by value in Redis.
+
+
+[exec]: ../references.md#zeesql-exec
+[query]: ../references.md#zeesql-query
+
