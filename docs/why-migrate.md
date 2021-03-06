@@ -1,14 +1,12 @@
 # Why you should migrate from RediSQL to zeeSQL
 
-zeeSQL is the successor of RediSQL.
-zeeSQL is RediSQL V2.
+zeeSQL is the successor of RediSQL. zeeSQL is RediSQL V2.
 
 It is based on largely the same codebase but improved in several ways with novel features.
 
 ## Secondary indexes, or search by value
 
-Secondaries indexes allow searching Redis keys by value.
-If you are interested in searching Redis keys by value or manipulate Redis hashes without maintains secondary data structures, secondary indexes are a perfect way to do it.
+Secondaries indexes allow searching Redis keys by value. If you are interested in searching Redis keys by value or manipulate Redis hashes without maintains secondary data structures, secondary indexes are a perfect way to do it.
 
 Secondary indexes have been introduced in RediSQL V2, also know as zeeSQL.
 
@@ -30,7 +28,7 @@ This allows writing wrappers or client library that automatically creates the co
 
 In the example below, you can see what RediSQL returned, versus what zeeSQL returns.
 
-```
+```text
 127.0.0.1:6379> REDISQL.V1.CREATE_DB DB
 OK
 127.0.0.1:6379> REDISQL.V1.EXEC DB "create table foo(a, b, c);"
@@ -56,8 +54,7 @@ OK
    3) (integer) 2
 ```
 
-The result from zeeSQL is more structured.
-It contains the columns' name, then their type, and finally the rows.
+The result from zeeSQL is more structured. It contains the columns' name, then their type, and finally the rows.
 
 The result from RediSQL returns directly the rows without providing information about the column name and their type.
 
@@ -85,7 +82,7 @@ But zeeSQL returns **always** a nested array.
 
 Let's compare the same workflow with RediSQL and with zeeSQL.
 
-```
+```text
 127.0.0.1:6379> REDISQL.V1.CREATE_DB DB
 OK
 127.0.0.1:6379> REDISQL.V1.EXEC DB "create table foo(a, b, c);"
@@ -102,7 +99,7 @@ OK
 
 In this example, RediSQL returned three different types of results.
 
-```
+```text
 127.0.0.1:6379> ZEESQL.CREATE_DB DB1
 1) 1) "OK"
 127.0.0.1:6379> ZEESQL.EXEC DB1 COMMAND "create table foo(a);"
@@ -131,7 +128,7 @@ This makes working with zeeSQL much simpler in both dynamic and statically typed
 
 The string returned in a valid JSON string.
 
-```
+```text
 127.0.0.1:6379> ZEESQL.CREATE_DB DB1
 1) 1) "OK"
 127.0.0.1:6379> ZEESQL.EXEC DB1 COMMAND "create table foo(a);" JSON
@@ -148,13 +145,11 @@ In RediSQL there is no way to pass arguments to simple queries.
 
 You can either submit a full query, or create a statement, and submit the statement with arguments.
 
-[In zeeSQL is possible to submit queries with arguments.](references.md#args-arguments)
-Especially if the arguments are coming from the users you should always submit them as arguments.
+[In zeeSQL is possible to submit queries with arguments.](references.md#args-arguments) Especially if the arguments are coming from the users you should always submit them as arguments.
 
-In RediSQL you had no choice, but to create a statement, and bind the arguments.
-In zeeSQL you can bind them to a simple query, without the need of creating a statement.
+In RediSQL you had no choice, but to create a statement, and bind the arguments. In zeeSQL you can bind them to a simple query, without the need of creating a statement.
 
-```
+```text
 127.0.0.1:6379> ZEESQL.CREATE_DB DB
 1) 1) "OK"
 127.0.0.1:6379> ZEESQL.EXEC DB1 COMMAND "create table foo(a);"
@@ -188,3 +183,4 @@ All the RediSQL commands are prefixed by the `REDISQL.` string.
 In zeeSQL you can find exactly the same commands, with exactly the same semantic, but a different prefix: `REDISQL.V1.`.
 
 So if in RediSQL you used the `REDISQL.EXEC` command, with zeeSQL you can use the exact same command with `REDISQL.V1.EXEC`.
+

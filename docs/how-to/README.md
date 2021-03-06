@@ -1,4 +1,6 @@
-# How to
+---
+description: Set of short tutorial to get you started with zeeSQL as fast as possible!
+---
 
-Set of short tutorial to get you started with zeeSQL as fast as possible!
+# How to
 

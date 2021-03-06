@@ -11,7 +11,7 @@ When you modify your database, with an `UPDATE` or a `DELETE` or a `INSERT` trig
 To create a trigger, we need to define:
 
 1. When to invoke it
-1. What the trigger should do
+2. What the trigger should do
 
 A trigger can be invoked in response to either an UPDATE or a DELETE or an INSERT.
 
@@ -21,6 +21,5 @@ The action that the trigger should do, is a simple SQL command, it can be an INS
 
 Trigger are very useful to keep the database consistent with some view of the world that was not possible to express in the SQL schema, or to keep counters.
 
-For instance, suppose we want to have a very quick way to know how many rows are in a table. We can either run a count(), or we can keep track of each row with a trigger.
+For instance, suppose we want to have a very quick way to know how many rows are in a table. We can either run a count\(\), or we can keep track of each row with a trigger.
 
-  

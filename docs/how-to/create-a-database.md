@@ -10,9 +10,9 @@ Each database is associate with a Redis key.
 
 Delete the key, and the database is deleted. If the database is backed by a file, then the file is closed, but it is not deleted.
 
-To create a database, you can use the command [`ZEESQL.CREATE_DB`][createdb]
+To create a database, you can use the command [`ZEESQL.CREATE_DB`](../references.md#zeesql-create_db)
 
-```
+```text
 127.0.0.1:6379> ZEESQL.CREATE_DB DB
 1) 1) "OK"
 ```
@@ -23,7 +23,7 @@ In-memory databases will always be created empty in zeeSQL.
 
 To create a database-backed by a file, you need to pass the `PATH` flag.
 
-```
+```text
 127.0.0.1:6379> ZEESQL.CREATE_DB FILE_DB PATH file.sqlite
 1) 1) "OK"
 ```
@@ -42,7 +42,7 @@ Suppose you already have an SQLite database that contains your users, and that y
 
 To import that database inside zeeSQL you only need to:
 
-```
+```text
 127.0.0.1:6379> ZEESQL.CREATE_DB USERS PATH users.sqlite
 1) 1) "OK"
 127.0.0.1:6379> ZEESQL.EXEC USERS COMMAND "select * from users"
@@ -66,10 +66,5 @@ To import that database inside zeeSQL you only need to:
 
 ## About zeeSQL
 
-zeeSQL is a Redis Module that provides SQL capabilities to Redis.
-It allows the creation and management of several SQL databases, each one independent from the other.
-Moreover, zeeSQL provides out-of-the-box [secondary indexes](../secondary-indexes.md) capabilities, allowing fast and easy search by value in Redis.
-
-[createdb]: ../references.md#zeesql-create_db
-
+zeeSQL is a Redis Module that provides SQL capabilities to Redis. It allows the creation and management of several SQL databases, each one independent from the other. Moreover, zeeSQL provides out-of-the-box [secondary indexes](../secondary-indexes.md) capabilities, allowing fast and easy search by value in Redis.
 

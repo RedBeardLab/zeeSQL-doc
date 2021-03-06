@@ -2,9 +2,7 @@
 
 This document explains all the API that zeeSQL provide to the users.
 
-`zeeSQL` is a Redis module, the command illustrate below are added **on top** of all the existing Redis commands.
-Using `zeeSQL` means using Redis at the same time.
-You can use any Redis client, in any programming language, even the `redis-cli`, to send the `zeeSQL` commands.
+`zeeSQL` is a Redis module, the command illustrate below are added **on top** of all the existing Redis commands. Using `zeeSQL` means using Redis at the same time. You can use any Redis client, in any programming language, even the `redis-cli`, to send the `zeeSQL` commands.
 
 This document refers to the latest API, but `zeeSQL` commits to backward-compatible API.
 

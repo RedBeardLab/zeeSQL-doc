@@ -1,16 +1,16 @@
 # JSON on Redis via RediSQL, SQL steroids for Redis
 
-#### RediSQL, Redis on SQL steroids.
+### RediSQL, Redis on SQL steroids.
 
 RediSQL is a redis module that embeds SQLite to provide full SQL capabilities to redis.
 
-The fastest introduction to RediSQL is [our homepage](/)
+The fastest introduction to RediSQL is [our homepage](https://github.com/RedBeardLab/zeeSQL-doc/tree/70a762a22db224251819ed5ce9119aa9d87adf58/README.md)
 
-tl;dr; We build a **JSON as a Service** in less than 500 lines of javascript + RediSQL, you can check out the [whole source file here.][jaas]
+tl;dr; We build a **JSON as a Service** in less than 500 lines of javascript + RediSQL, you can check out the [whole source file here.](https://github.com/RedBeardLab/JaaS/blob/master/index.js)
 
 ## JSON as a Service in 500 lines of code + RediSQL
 
-While building web services is common to have the need to store some un-structured or semi-structured data (aka **JSON**) somewhere.
+While building web services is common to have the need to store some un-structured or semi-structured data \(aka **JSON**\) somewhere.
 
 Unfortunately, it is not always so easy.
 
@@ -20,7 +20,7 @@ If you are already using some kind of NoSQL database you may be a little luckier
 
 ## A faster solution
 
-A faster solution could be to use RediSQL exploiting the [JSON1][JSON1] extension.
+A faster solution could be to use RediSQL exploiting the [JSON1](https://www.sqlite.org/json1.html) extension.
 
 SQLite provides several interesting extensions and one of our favourites is JSON1 that allow an efficient and fast manipulation of JSON data, all inside a full SQL engine.
 
@@ -34,7 +34,7 @@ We will create JSON object that will have names and then each object will live i
 
 Then we will like to have a simple RediSQL interface like this one:
 
-```
+```text
 127.0.0.1:6379> REDISQL.EXEC_STATEMENT DB create_namespace noises
 1) DONE
 2) (integer) 1
@@ -48,12 +48,12 @@ Then we will like to have a simple RediSQL interface like this one:
 1) 1) "blablabla"
 127.0.0.1:6379> REDISQL.EXEC_STATEMENT DB extract noises animals $.dog
 1) 1) "woof"
-127.0.0.1:6379> 
+127.0.0.1:6379>
 ```
 
 Of course, we would also like to navigate complex JSONs and to add fields and values at will.
 
-```
+```text
 127.0.0.1:6379> REDISQL.EXEC_STATEMENT DB create_namespace foo
 1) DONE
 2) (integer) 1
@@ -77,7 +77,7 @@ Of course, we would also like to navigate complex JSONs and to add fields and va
 
 In this specific example we are only showing JSON, but keep in mind that the JSON field can be stored alongside the regular SQL fields as an extra field to hold any kind of unstructured data.
 
-Also please note how these APIs are quite pleasant to work with, they seem almost native to redis and thanks to redis-module we have the possibility to simply create more powerful commands. 
+Also please note how these APIs are quite pleasant to work with, they seem almost native to redis and thanks to redis-module we have the possibility to simply create more powerful commands.
 
 ## Implementation
 
@@ -85,7 +85,7 @@ Now that we know what we are trying to achieve let's proceed to the implementati
 
 Usually is a good idea to start from the data structure, and in our simple, but powerful, example, we need only a single table:
 
-``` SQL
+```sql
 CREATE TABLE IF NOT EXISTS namespace ( 
     namespace TEXT PRIMARY KEY 
 ); 
@@ -103,7 +103,7 @@ We could have done everything with just `json_data` and without `namespace`, but
 
 Now that we have our data structure we can proceed with the procedures that I have show you above:
 
-``` SQL
+```sql
 -- create_namespace
 INSERT INTO namespace VALUES(?1);
 
@@ -134,7 +134,7 @@ UPDATE json_data
 
 In order to actually create those table here is an example on RediSQL that is more difficult to read but simpler to just copy and paste into the redis-cli.
 
-```
+```text
 127.0.0.1:6379> REDISQL.CREATE_DB DB
 OK
 127.0.0.1:6379> REDISQL.EXEC DB "CREATE TABLE IF NOT EXISTS namespace (namespace TEXT PRIMARY KEY);" 
@@ -155,9 +155,9 @@ OK
 OK
 ```
 
-Of course, there are a lot more commands in JSON1 API to use and explore, so I will simply [leave you the reference][JSON1].
+Of course, there are a lot more commands in JSON1 API to use and explore, so I will simply [leave you the reference](https://www.sqlite.org/json1.html).
 
-I also prepare a simple node application which exposes this exact same interface via REST API, it is a single, ~500 LOC, file that you can find [here][jaas]
+I also prepare a simple node application which exposes this exact same interface via REST API, it is a single, ~500 LOC, file that you can find [here](https://github.com/RedBeardLab/JaaS/blob/master/index.js)
 
 Feel free to use the node application as a blueprint for your next project.
 
@@ -173,7 +173,5 @@ Of course, if you have any question on RediSQL either open a public issue or wri
 
 Cheers,
 
-;)
+;\)
 
-[JSON1]: https://www.sqlite.org/json1.html
-[jaas]: https://github.com/RedBeardLab/JaaS/blob/master/index.js

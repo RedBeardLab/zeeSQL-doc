@@ -6,13 +6,13 @@ zeeSQL can also returns the exact same information as JSON output.
 
 JSON output may be preferable since it is usually easier to parse and all languages offer full support for it.
 
-The [`ZEESQL.EXEC`][exec] and [`ZEESQL.QUERY`][query] commands support the [`JSON`][json] flag, which instructs them to return JSON as output.
+The [`ZEESQL.EXEC`](../references.md#zeesql-exec) and [`ZEESQL.QUERY`](../references.md#zeesql-query) commands support the [`JSON`](../references.md#json-flag) flag, which instructs them to return JSON as output.
 
 ## Examples
 
 The first example is about a command that does not return any rows but only `DONE`.
 
-```
+```text
 127.0.0.1:6379> ZEESQL.CREATE_DB DB
 1) 1) "OK"
 127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "CREATE TABLE foo(col1 STRING, col2 INT, col3 STRING);"
@@ -24,7 +24,7 @@ The first example is about a command that does not return any rows but only `DON
 
 Adding the `JSON` flags returns the exact same result but in JSON format.
 
-```
+```text
 127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "INSERT INTO foo VALUES('AAA', 2, 'BBB'),('CCC', 3, 'DDD');"
 1) 1) "DONE"
 2) 1) (integer) 2
@@ -34,7 +34,7 @@ Adding the `JSON` flags returns the exact same result but in JSON format.
 
 Another example is when the command returns some rows.
 
-```
+```text
 127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "SELECT * FROM foo;"
 1) 1) "RESULT"
 2) 1) "col1"
@@ -57,7 +57,7 @@ The returned JSON is formatted for saving bytes on the network, not for readabil
 
 However, the result looks like this:
 
-```
+```text
 {
   "rows": [
     {
@@ -90,12 +90,5 @@ Overall returning JSON from zeeSQL is very simple, just add the `JSON` flag to y
 
 ## About zeeSQL
 
-zeeSQL is a Redis Module that provides SQL capabilities to Redis.
-It allows the creation and management of several SQL databases, each one independent from the other.
-Moreover, zeeSQL provides out-of-the-box [secondary indexes](../secondary-indexes.md) capabilities, allowing fast and easy search by value in Redis.
+zeeSQL is a Redis Module that provides SQL capabilities to Redis. It allows the creation and management of several SQL databases, each one independent from the other. Moreover, zeeSQL provides out-of-the-box [secondary indexes](../secondary-indexes.md) capabilities, allowing fast and easy search by value in Redis.
 
-
-
-[exec]: ../references.md#zeesql-exec
-[query]: ../references.md#zeesql-query
-[json]: ../references.md#json-flag

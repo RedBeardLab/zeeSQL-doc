@@ -371,4 +371,3 @@ I hope that this tutorial was helpful :\)
 
 If you have any question, feel free to contact me simone@redbeardlab.com or on github: [RedBeardLab/zeeSQL-doc](https://github.com/RedBeardLab/zeeSQL-doc)
 
-
