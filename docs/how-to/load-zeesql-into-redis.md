@@ -54,4 +54,3 @@ This will load the module exactly like the two other systems.
 ## About zeeSQL
 
 zeeSQL is a Redis Module that provides SQL capabilities to Redis. It allows the creation and management of several SQL databases, each one independent from the other. Moreover, zeeSQL provides out-of-the-box [secondary indexes](../secondary-indexes.md) capabilities, allowing fast and easy search by value in Redis.
-
