@@ -1,24 +1,12 @@
 # zeeSQL, SQL and search by value for Redis. Fast, Simple and Reliable.
 
-This is a short introduction to zeeSQL, a Redis modules that brings SQL capabilities into Redis.
+This is an introduction to zeeSQL, a Redis modules that brings SQL capabilities into Redis along with complex SQL search by value of Redis hashes.
 
 This document is your entry point for the documentation and will guide you to what to read next.
 
 ## Quickstart
 
-The very first thing is to get the binary.
-
-```text
-wget https://zeesql.com/releases/latest/zeesql.so -o $HOME/zeesql.so
-```
-
-Once you got the module you can start a Redis instance loading the module.
-
-```text
-redis-server --loadmodule $HOME/zeesql.so
-```
-
-At this point you can start a Redis client to interact with the module.
+Once you start zeeSQL, you can interact with it using the standard `redis-cli`.
 
 Below we are creating a database, create a new table, insert new rows, and query those rows back.
 
@@ -27,22 +15,42 @@ $ redis-cli
 > ZEESQL.CREATE_DB DB
 1) 1) "OK"
 > ZEESQL.EXEC DB COMMAND "CREATE TABLE users(id STRING, score INT);"
-> ZEESQL.EXEC DB COMMAND "INSERT INTO users VALUES('jausten', 3), ('hugo', 5);"
+1) 1) "DONE"
+2) 1) (integer) 0
+127.0.0.1:6379> ZEESQL.EXEC DB COMMAND "INSERT INTO users VALUES('jausten', 3), ('hugo', 5);"
+1) 1) "DONE"
+2) 1) (integer) 2
 > ZEESQL.EXEC DB COMMAND "SELECT * FROM users;"
+1) 1) "RESULT"
+2) 1) "id"
+   2) "score"
+3) 1) "TEXT"
+   2) "INT"
+4) 1) "jausten"
+   2) (integer) 3
+5) 1) "hugo"
+   2) (integer) 5
 ```
 
 `zeeSQL` allows searching Redis hashes by values, making much simpler to express complex queries.
 
 ```text
 > ZEESQL.INDEX DB NEW PREFIX products:* TABLE products SCHEMA id INT price INT name STRING
+OK
 > HMSET products:123 id 123 price 2345 name "set of glasses"
+OK
 > HMSET products:471 id 471 price 3459 name "wall clock"
+OK
 > ZEESQL.EXEC DB COMMAND "SELECT name FROM products WHERE price > 2500;"
+1) 1) "RESULT"
+2) 1) "name"
+3) 1) "TEXT"
+4) 1) "wall clock"
 ```
 
 If you think that `zeeSQL` can solve some of your problem, please keep reading for more context and details.
 
-Or you can [read the Tutorial]() to get a better overview on how `zeeSQL` works and what it can do for you.
+Or you can [read the Tutorial](tutorial.md) to get a better overview on how `zeeSQL` works and what it can do for you.
 
 ## What is zeeSQL
 
