@@ -44,6 +44,13 @@ The binary can be distributed in whichever way you like, so you can push it in y
 
 After you got the binary, you need to [load it in Redis.](load-zeesql-into-redis.md)
 
+
+## Using the license
+
+If you are using either the docker image or the binary, zeeSQL will be run with limitations.
+
+To avoid those limitations, you need a [software license](../pricing.md).
+
 ## About zeeSQL
 
 zeeSQL is a Redis Module that provides SQL capabilities to Redis. It allows the creation and management of several SQL databases, each one independent from the other. Moreover, zeeSQL provides out-of-the-box [secondary indexes](../secondary-indexes.md) capabilities, allowing fast and easy search by value in Redis.
