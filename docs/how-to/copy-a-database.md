@@ -14,7 +14,7 @@ For instance, if each of your users is associated with a database, instead of cr
 Copying databases can also help in spreading read load against an immutable database.
 Instead of reading from a single database, you can copy the database into few other databases and spread the load.
 
-To copy a database, you can use the [`ZEESQL.COPY`](../references.md) database.
+To copy a database, you can use the [`ZEESQL.COPY`](../references.md#zeesql-copy) database.
 
 The command takes two databases, after the `FROM` and the `TO` flags.
 The database after the `FROM` flag is the source database.
